@@ -1,0 +1,192 @@
+=== DATA SPECS ===
+SYSTEME DE REGISTRE DE CANCER
+Wilaya de Tlemcen
+————————————————
+GUIDE COMPLET DES DONNEES A SAISIR
+Champs Obligatoires, Recommandes et Optionnels
+Base sur les standards IARC / CanReg5 / CIM-O-3 / ICD-10
+Version 1.0  |  Fevrier 2026
+LEGENDE DES STATUTS
+1.  DONNEES DEMOGRAPHIQUES DU PATIENT
+Ces donnees permettent d'identifier le patient, de detecter les doublons et de geoloquer les cas. Saisie par le Secretaire.
+1.1  Identification du Patient
+1.2  Adresse et Geolocalisation
+L'adresse est CRITIQUE pour le SIG et le calcul d'incidence par zone. Saisir la commune de residence habituelle, pas celle du soin.
+1.3  Coordonnees de Contact
+1.4  Donnees Socio-Demographiques
+Donnees utilisees pour analyses epidemiologiques avancees. Collectees si disponibles dans le dossier.
+
+2.  DONNEES DE LA TUMEUR (CANCER)
+Ces donnees sont le COEUR du registre. Saisie par le Medecin uniquement. Codification obligatoire selon CIM-O-3 et ICD-10.
+2.1  Identification du Cas de Cancer
+2.2  Localisation et Classification CIM-O-3 (OBLIGATOIRE)
+
+2.3  Base du Diagnostic (OBLIGATOIRE - Indicateur Qualite)
+
+
+2.4  Stade et Extension de la Maladie
+
+
+3.  DONNEES DU LABORATOIRE D'ANATOMOPATHOLOGIE
+Saisie par le Laborantin (Anapath). Ces donnees viennent directement des comptes rendus anatomopathologiques.
+
+
+
+
+
+
+
+4.  DONNEES DE TRAITEMENT ET PRISE EN CHARGE
+Saisie par le Medecin traitant. Permet de suivre le parcours de soins et calculer les taux de survie.
+
+
+
+
+5.  SUIVI DU PATIENT ET STATUT VITAL
+Variable CRITIQUE pour les analyses de survie. Actuellement ABSENTE dans CanReg5 a Tlemcen. Ce systeme doit la capturer.
+
+
+
+
+
+
+
+6.  DONNEES ADMINISTRATIVES ET HOSPITALIERES
+Donnees relatives a la structure de soins. Permettent les analyses par etablissement et la gestion des transferts.
+
+
+
+
+
+
+
+7.  FACTEURS DE RISQUE ET ANTECEDENTS
+Donnees pour etudes etiologiques. Collectees SEULEMENT si disponibles dans le dossier. NE PAS interviewer le patient.
+
+
+
+
+
+
+
+
+8.  CONSENTEMENTS ET ASPECTS JURIDIQUES
+
+9.  INDICATEURS DE QUALITE ET TRAÇABILITE
+Variables calculees automatiquement par le systeme pour assurer la qualite des donnees.
+10.  TABLEAU RECAPITULATIF PAR ACTEUR
+Note importante: Standards de reference utilises
+CIM-O-3 (Classification Internationale des Maladies pour l'Oncologie - 3e edition) - IARC/OMS
+ICD-10 (10e revision) - Pour codage et comparaisons nationales/internationales
+TNM 8e edition (UICC/AJCC) - Pour classification du stade
+CanReg5 - Logiciel IARC de reference utilise par le Registre de Tlemcen
+ENCR (European Network of Cancer Registries) - Recommandations variables essentielles
+Loi algerienne 18-07 du 10 juin 2018 relative a la protection des personnes physiques
+
+
+=== SCENARIOS ===
+
+LISTE DES SCENARIOS
+
+
+
+► Contexte et Histoire
+Nous sommes le mardi 15 juin 2026, 9h14 du matin. Fatima Zahra Benali, 52 ans, se presente pour la premiere fois au bureau des admissions du CHU Tidjini Damerdji de Tlemcen. Elle a ete adressee par son medecin generaliste de Maghnia suite a la decouverte d'une masse suspecte au sein gauche lors d'une mammographie. Elle tient dans ses mains une enveloppe contenant sa carte d'identite, sa carte CNAS et l'ordonnance de son medecin.
+Sara Bensalem, secretaire medicale depuis 7 ans au service d'oncologie, l'accueille. Elle ouvre la plateforme sur son poste de travail et clique sur « Nouveau Patient ».
+
+► Preconditions
+
+► Deroulement Detaille — Etape par Etape
+
+► Donnees Saisies dans ce Scenario
+
+► Cas Limite: Que faire si le patient refuse le consentement?
+
+► Cas Limite: Patient deja connu (doublon detecte a l'etape 2)
+
+
+► Contexte et Histoire
+Trois jours apres son enregistrement, Fatima Zahra Benali se presente a son rendez-vous avec le Dr. Benali. Il est 10h30. Le medecin se connecte a la plateforme depuis son bureau au service d'oncologie medicale. Il voit dans son tableau de bord: '1 nouveau patient — PAT-2026-07834 — Benali Fatima Zahra — RDV 10h30'. Il clique pour ouvrir le dossier.
+Apres l'examen clinique et la revue des documents apportes par la patiente (compte rendu mammographie, echo mammaire), le Dr. Benali pose un diagnostic de suspicion forte de carcinome mammaire gauche. Il prescrit une biopsie en urgence et commence a remplir le dossier medical.
+
+► Deroulement Detaille
+
+► Donnees Saisies dans ce Scenario
+
+► Validation Automatique du Systeme
+
+
+► Contexte et Histoire
+Cinq jours apres la consultation, le 23 juin 2026, la biopsie a ete realisee. Le Dr. Khelil, anatomopathologiste au CHU Tlemcen, vient de terminer l'analyse de la piece biopsique de Mme Benali. Il est 16h45. Il se connecte a la plateforme sous le role 'Laboratoire' et cherche la requete d'examen liee a la patiente.
+Il voit dans son tableau de bord la requete REQ-2026-00921 en statut 'En attente de resultats'. Il clique dessus et commence la saisie du compte rendu anatomopathologique.
+
+► Deroulement Detaille
+
+► Impact de la Saisie du Labo sur le Dossier Medical
+
+► Donnees Saisies dans ce Scenario
+
+
+► Contexte et Histoire
+Le 2 juillet 2026 a 11h00. Mounir Belarbi, 61 ans, se presente a l'EPH de Maghnia. Il dit ne jamais avoir ete soigne dans cet hopital pour son cancer de la prostate. La secretaire Amina Kaci commence la procedure d'enregistrement habituelle.
+Ce que ni le patient ni la secretaire ne savent: M. Belarbi a deja ete enregistre en janvier 2026 au CHU Tlemcen sous un nom legerement different (Belarbi au lieu de Belaarbi) a cause d'une faute de frappe. Le systeme va detecter ce doublon.
+
+► Deroulement Detaille
+
+► Niveaux de Detection des Doublons dans le Systeme
+
+
+
+► Contexte et Histoire
+Nous sommes le 15 septembre 2026. Karim Benchouk, 45 ans, est traite depuis 3 mois a l'EPH de Tlemcen pour un cancer du colon. Sa famille vient de demenager a Oran pour des raisons professionnelles. Il souhaite continuer ses soins a l'EHS Pierre et Marie Curie d'Oran. Il se presente a la secretaire de l'EPH avec sa carte patient (contenant son Patient ID et son PIN).
+
+► Deroulement Detaille
+
+► Cas Limite: L'hopital de destination refuse le transfert
+
+► Cas Limite: Code de transfert expire (30 jours depassés)
+
+
+► Contexte et Histoire
+Le 28 juillet 2026. Le Dr. Benali relit le dossier de Mme Benali avant la reunion RCP. Il realise qu'il a saisi le stade N comme 'NX' alors qu'en realite, lors de l'examen sous scanner (resultat arrive entre-temps), les ganglions axillaires gauches sont positifs (N1). Il doit corriger cette erreur critique qui affecte le stade final du cancer (IIA → IIIA). Toute modification doit etre tracee.
+
+► Deroulement Detaille
+
+► Ce que voit l'Auditeur dans le Journal de Bord
+
+
+► Contexte et Histoire
+Le 5 aout 2026. Dr. Meguenni, epidemiologiste au registre du cancer de Tlemcen, effectue sa session hebdomadaire de validation. Il a 12 dossiers en attente de validation. Il ouvre la file de travail. Parmi eux, le dossier TUM-2026-04521 de Mme Benali, avec un score de completude de 92%, arrive en priorite.
+
+► Deroulement Detaille
+
+
+
+► Contexte et Histoire
+Novembre 2026. Le Dr. Meguenni doit preparer le rapport semestriel du registre de cancer de Tlemcen pour la Direction de la Sante et de la Population (DSP). Il dispose maintenant de 847 cas enregistres depuis le lancement de la plateforme en janvier 2026. Il se connecte au module statistique.
+
+► Deroulement Detaille
+
+► Indicateurs Calcules Automatiquement
+
+
+► Contexte et Histoire
+Le 20 aout 2026. Le Dr. Benali est face au cas difficile de Mme Benali. Le dossier est maintenant complet: carcinome canalaire infiltrant, Grade III, Stade IIIA, RE+/RP+/HER2-. La question est: faut-il faire une chimiotherapie neoadjuvante d'abord, puis operer? Ou operer directement? Il decide de soumettre le cas a une RCP (Reunion de Concertation Pluridisciplinaire). C'est une pratique standard en oncologie — la plateforme la numerise.
+
+► Deroulement Detaille
+
+
+
+► Contexte et Histoire
+Deux ans plus tard. Juillet 2028. Fatima Zahra Benali a termine sa chimiotherapie neoadjuvante, a subi une mastectomie partielle et a acheve sa radiotherapie. Elle est en remission partielle. Le Dr. Benali met a jour son statut vital lors de la consultation de suivi semestriel.
+SCENARIO PARALLELE: Dans le meme temps, Djamel Khelifi, 68 ans, un autre patient du registre avec un cancer du poumon diagnostique en mars 2026, vient de deceder a domicile. Son etat civil est transmis au service d'epidemiologie par la famille. L'epidemiologiste doit enregistrer ce deces dans le registre pour les analyses de survie.
+
+► 10A — Mise a jour en vie (remission)
+
+► 10B — Enregistrement d'un deces
+
+► Importance de cette Variable pour le Registre
+
+RESUME GLOBAL — DONNEES TOUCHEES PAR CHAQUE SCENARIO
+
+
