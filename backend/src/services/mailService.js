@@ -29,7 +29,8 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
     tls: {
       // Do not fail on invalid certs (common for internal SMTP)
       rejectUnauthorized: false
-    }
+    },
+    family: 4 // Force IPv4 — Render free tier blocks IPv6 outbound connections
   });
 
   const mailOptions = {
@@ -72,7 +73,8 @@ const sendLabResultNotification = async (doctorEmail, doctorName, patientName, r
     },
     tls: {
       rejectUnauthorized: false
-    }
+    },
+    family: 4 // Force IPv4 — Render free tier blocks IPv6 outbound connections
   });
 
   const mailOptions = {
