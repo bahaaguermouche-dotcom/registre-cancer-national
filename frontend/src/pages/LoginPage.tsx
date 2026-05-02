@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 
 interface User {
     id: string;
@@ -29,7 +29,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         setError('');
 
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', {
+            const response = await api.post('/api/auth/login', {
                 email,
                 password
             });
@@ -39,7 +39,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             navigate('/dashboard');
         } catch (err: any) {
             console.error("Login failed:", err);
-            setError(err.response?.data?.error || "Une erreur est survenue lors de la connexion.");
+            setError(err.response?.data?.error || "Une erreur est survenue lors de l'connexion.");
         } finally {
             setLoading(false);
         }

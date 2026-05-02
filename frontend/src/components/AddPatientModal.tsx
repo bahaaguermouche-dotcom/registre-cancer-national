@@ -33,11 +33,16 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
         consent_status: 'Signé'
     });
 
-    const [categories, setCategories] = useState<{ name: string }[]>([]);
+    const [categories, setCategories] = useState<{ name: string, specialties: string[], min_age: number, max_age: number }[]>([]);
     const [selectedCategoryData, setSelectedCategoryData] = useState<any>(null);
     const [genderAlert, setGenderAlert] = useState<string | null>(null);
     const [duplicates, setDuplicates] = useState<{ name: string, loc: string }[]>([]);
     const [exactMatch, setExactMatch] = useState(false);
+    const [mergeMode, setMergeMode] = useState(false);          // same NIN, different cancer
+    const [sameCancerConflict, setSameCancerConflict] = useState(false); // hard block
+    const [conflictingHospital, setConflictingHospital] = useState<string | null>(null);
+    const [existingPatientData, setExistingPatientData] = useState<any>(null);
+    const [existingCancers, setExistingCancers] = useState<{ cancer_type: string, hospital: string }[]>([]);
     const [doctors, setDoctors] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -66,6 +71,11 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
             setCreatedPatient(null);
             setDuplicates([]);
             setExactMatch(false);
+            setMergeMode(false);
+            setSameCancerConflict(false);
+            setConflictingHospital(null);
+            setExistingPatientData(null);
+            setExistingCancers([]);
         }
     }, [isOpen]);
 
@@ -114,7 +124,41 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
         setFormData(prev => ({ ...prev, commune_residence: val, daira: communesTlemcen[val] || val }));
     };
 
-    const checkDuplicates = async () => {
+    const filteredDoctors = useMemo(() => {
+        if (!formData.cancer_category) return doctors;
+        const selectedCat = categories.find(c => c.name === formData.cancer_category);
+        if (!selectedCat || !selectedCat.specialties) return doctors;
+
+        // Parse the cancer category's specialties (may contain JSON array strings)
+        const catSpecs: string[] = [];
+        for (const s of selectedCat.specialties) {
+            if (s && s.startsWith('[')) {
+                try { catSpecs.push(...JSON.parse(s)); } catch { catSpecs.push(s); }
+            } else if (s) {
+                catSpecs.push(s);
+            }
+        }
+        const catSpecsLower = catSpecs.map(s => s.toLowerCase());
+
+        // A doctor is a match if ANY of their specialties overlaps with the cancer category's specialties
+        return doctors.filter(doc => {
+            // Parse doctor specialty (may be a JSON array string or a plain string)
+            let docSpecs: string[] = [];
+            const raw = doc.specialty || '';
+            if (raw.startsWith('[')) {
+                try { docSpecs = JSON.parse(raw); } catch { docSpecs = [raw]; }
+            } else {
+                docSpecs = [raw];
+            }
+
+            return docSpecs.some(ds => {
+                const dsLower = ds.toLowerCase();
+                return catSpecsLower.some(cs => cs.includes(dsLower) || dsLower.includes(cs));
+            });
+        });
+    }, [doctors, formData.cancer_category, categories]);
+
+    const checkDuplicates = async (cancerType?: string) => {
         if (!formData.national_id && !formData.cnas_number && (!formData.first_name || !formData.last_name)) return;
         try {
             const token = localStorage.getItem('token');
@@ -122,10 +166,38 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
                 first_name: formData.first_name,
                 last_name: formData.last_name,
                 national_id: formData.national_id,
-                cnas_number: formData.cnas_number
+                cnas_number: formData.cnas_number,
+                cancer_type: cancerType || formData.cancer_category
             }, { headers: { Authorization: `Bearer ${token}` } });
+
             setDuplicates(res.data.matches || []);
             setExactMatch(res.data.exact_match || false);
+            setSameCancerConflict(res.data.same_cancer_conflict || false);
+            setConflictingHospital(res.data.conflicting_hospital || null);
+            setExistingCancers(res.data.existing_cancers || []);
+
+            if (res.data.exact_match && !res.data.same_cancer_conflict) {
+                // Same patient, different cancer → merge mode
+                setMergeMode(true);
+                if (res.data.existing_patient) {
+                    const ep = res.data.existing_patient;
+                    setExistingPatientData(ep);
+                    // Pre-fill demographic fields from existing patient
+                    setFormData(prev => ({
+                        ...prev,
+                        first_name: ep.first_name || prev.first_name,
+                        last_name: ep.last_name || prev.last_name,
+                        birth_date: ep.birth_date ? ep.birth_date.substring(0, 10) : prev.birth_date,
+                        gender: ep.gender || prev.gender,
+                        blood_type: ep.blood_type || prev.blood_type,
+                        cnas_number: ep.cnas_number || prev.cnas_number,
+                        phone_primary: ep.phone_primary || prev.phone_primary,
+                    }));
+                }
+            } else {
+                setMergeMode(false);
+                setExistingPatientData(null);
+            }
         } catch (e) {
             console.error("Dupe check failed", e);
         }
@@ -134,8 +206,24 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
     const nextStep = async () => {
         if (step === 1) {
             await checkDuplicates();
-            if (exactMatch) {
+            // In merge mode we jump straight to step 4 (cancer + doctor selection)
+            if (mergeMode && !sameCancerConflict) {
+                setStep(4);
+                return;
+            }
+            if (sameCancerConflict) {
+                return; // blocked — message shown in UI
+            }
+            if (exactMatch && !mergeMode) {
                 alert("ERREUR CRITIQUE : Ce patient est déjà enregistré (Doublon CNI).");
+                return;
+            }
+        }
+        // On step 4 cancer selection change, re-run the duplicate check with the cancer type
+        if (step === 3) {
+            await checkDuplicates(formData.cancer_category);
+            if (sameCancerConflict) {
+                setStep(4); // go to step 4 where the block message will show
                 return;
             }
         }
@@ -146,19 +234,28 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (sameCancerConflict) return; // should never reach here but guard anyway
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const dataToSubmit = {
                 ...formData,
-                cancer_type: formData.cancer_category
+                age: formData.age ? parseInt(formData.age.toString()) : null,
+                doctor_id: (formData.doctor_id && formData.doctor_id !== "") ? formData.doctor_id : null,
+                cancer_type: formData.cancer_category,
+                merge_mode: mergeMode,
+                existing_patient_id: existingPatientData?.id || null,
             };
             const response = await axios.post('http://localhost:5000/api/patients', dataToSubmit, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCreatedPatient(response.data);
             setStatus('success');
-        } catch (error) {
+        } catch (error: any) {
+            console.error("Submit patient error:", error);
+            if (error.response?.status === 409) {
+                alert(error.response.data.error || "Ce patient est déjà enregistré pour ce type de cancer.");
+            }
             setStatus('error');
         } finally {
             setLoading(false);
@@ -291,7 +388,50 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
                                             <option value="Femme">Femme</option>
                                         </select>
                                     </div>
+                                    <div>
+                                        <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px', display: 'block' }}>Groupe Sanguin</label>
+                                        <select
+                                            className="login-input" style={{ width: '100%' }}
+                                            value={formData.blood_type}
+                                            onChange={e => setFormData({ ...formData, blood_type: e.target.value })}
+                                        >
+                                            {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(type => (
+                                                <option key={type} value={type}>{type}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
+
+                                {/* === CROSS-HOSPITAL MERGE BANNER === */}
+                                {mergeMode && !sameCancerConflict && existingPatientData && (
+                                    <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#eff6ff', border: '2px solid #3b82f6', borderRadius: '16px', display: 'flex', gap: '12px' }}>
+                                        <div style={{ fontSize: '28px' }}>🔗</div>
+                                        <div>
+                                            <div style={{ fontSize: '14px', fontWeight: '800', color: '#1e40af', marginBottom: '4px' }}>Dossier existant détecté — Mode Liaison</div>
+                                            <div style={{ fontSize: '13px', color: '#1d4ed8', marginBottom: '8px' }}>
+                                                Ce patient ({existingPatientData.name}) est déjà enregistré pour :
+                                                <strong>{' '}{existingCancers.map(c => `${c.cancer_type} (${c.hospital})`).join(', ')}</strong>.
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: '#3b82f6' }}>
+                                                ✅ Vous allez lier votre établissement à ce dossier pour un <strong>nouveau cancer</strong>. Passez directement à l'étape 4 pour choisir le cancer et le médecin.
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* === SAME-CANCER CONFLICT BLOCKER === */}
+                                {sameCancerConflict && (
+                                    <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#fef2f2', border: '2px solid #ef4444', borderRadius: '16px', display: 'flex', gap: '12px' }}>
+                                        <div style={{ fontSize: '28px' }}>🚫</div>
+                                        <div>
+                                            <div style={{ fontSize: '14px', fontWeight: '800', color: '#991b1b', marginBottom: '4px' }}>Enregistrement refusé — Doublon Cancer</div>
+                                            <div style={{ fontSize: '13px', color: '#b91c1c' }}>
+                                                Ce patient est déjà suivi pour <strong>{formData.cancer_category}</strong> à <strong>{conflictingHospital}</strong>.
+                                                Un patient ne peut pas être inscrit deux fois pour le même type de cancer.
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -402,16 +542,47 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
                                     <Stethoscope size={20} /> <span style={{ fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Étape 4 : Parcours de Soins</span>
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                    <div style={{ gridColumn: 'span 2', padding: '16px', backgroundColor: '#f0fdfa', borderRadius: '16px', border: '1px solid #ccfbf1', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                        <div style={{ fontSize: '20px' }}>ℹ️</div>
+                                        <div>
+                                            <div style={{ fontSize: '13px', fontWeight: '800', color: '#115e59', marginBottom: '4px' }}>Logique CanReg5 : Saisie Différée (Recommandé)</div>
+                                            <div style={{ fontSize: '12px', color: '#0f766e' }}>
+                                                À l'admission, vous pouvez enregistrer le patient <strong>sans spécifier le cancer</strong> (laisser vide). Le médecin traitant se chargera de compléter la tumeur exacte et la base du diagnostic dans le dossier clinique.
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div style={{ gridColumn: 'span 2' }}>
-                                        <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px', display: 'block' }}>Suspicion de Cancer (Organe)</label>
+                                        <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px', display: 'block' }}>Suspicion de Cancer (Organe) — Optionnel</label>
                                         <select
                                             className="login-input" style={{ width: '100%' }}
                                             value={formData.cancer_category}
-                                            onChange={e => setFormData({ ...formData, cancer_category: e.target.value })}
+                                            onChange={async e => {
+                                                const newCancer = e.target.value;
+                                                setFormData({ ...formData, cancer_category: newCancer });
+                                                // Re-check cross-hospital for the chosen cancer
+                                                if (formData.national_id && newCancer) {
+                                                    await checkDuplicates(newCancer);
+                                                }
+                                            }}
                                         >
-                                            <option value="">Sélectionner l'organe...</option>
+                                            <option value="">Ne pas spécifier pour le moment</option>
                                             {categories.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
                                         </select>
+                                        {formData.cancer_category && (() => {
+                                            const cat = categories.find(c => c.name === formData.cancer_category);
+                                            const ageNum = parseInt(formData.age);
+                                            if (cat && (ageNum < cat.min_age || ageNum > cat.max_age)) {
+                                                return (
+                                                    <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#fff7ed', borderRadius: '12px', border: '1px solid #ffedd5', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                        <Activity size={16} color="#c2410c" />
+                                                        <p style={{ fontSize: '11px', color: '#c2410c', margin: 0, fontWeight: '600' }}>
+                                                            Attention : Ce type de cancer est inhabituel pour cet âge ({formData.age} ans). Plage attendue : {cat.min_age} - {cat.max_age} ans.
+                                                        </p>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        })()}
                                     </div>
                                     <div style={{ gridColumn: 'span 2' }}>
                                         <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px', display: 'block' }}>Médecin Responsable</label>
@@ -420,9 +591,22 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
                                             value={formData.doctor_id}
                                             onChange={e => setFormData({ ...formData, doctor_id: e.target.value })}
                                         >
-                                            <option value="">Choisir un médecin...</option>
-                                            {doctors.map(d => <option key={d.id} value={d.id}>Dr. {d.name} ({d.specialty})</option>)}
+                                            <option value="">{formData.cancer_category ? 'Choisir un spécialiste...' : 'Choisir un médecin...'}</option>
+                                            {filteredDoctors.map(d => {
+                                                let displaySpec = d.specialty || '';
+                                                try {
+                                                    if (displaySpec.startsWith('[')) {
+                                                        displaySpec = JSON.parse(displaySpec).join(', ');
+                                                    }
+                                                } catch { /* keep as-is */ }
+                                                return <option key={d.id} value={d.id}>Dr. {d.name} ({displaySpec})</option>;
+                                            })}
                                         </select>
+                                        {formData.cancer_category && filteredDoctors.length === 0 && (
+                                            <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '6px', fontWeight: '600' }}>
+                                                ⚠️ Aucun spécialiste de cette pathologie n'est actuellement enregistré dans votre établissement.
+                                            </p>
+                                        )}
                                     </div>
                                     <div style={{ gridColumn: 'span 2', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -441,6 +625,35 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
                                             </select>
                                         </div>
                                     </div>
+
+                                    {/* === STEP 4 SPECIFIC CONFLICT/MERGE BANNERS === */}
+                                    <div style={{ gridColumn: 'span 2' }}>
+                                        {mergeMode && !sameCancerConflict && existingPatientData && (
+                                            <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#eff6ff', border: '2px solid #3b82f6', borderRadius: '16px', display: 'flex', gap: '12px' }}>
+                                                <div style={{ fontSize: '24px' }}>🔗</div>
+                                                <div>
+                                                    <div style={{ fontSize: '14px', fontWeight: '800', color: '#1e40af', marginBottom: '4px' }}>Dossier existant détecté — Liaison</div>
+                                                    <div style={{ fontSize: '13px', color: '#1d4ed8' }}>
+                                                        Patient : <strong>{existingPatientData.name}</strong>. Cancers déjà suivis :
+                                                        <strong>{' '}{existingCancers.map(c => `${c.cancer_type} (${c.hospital})`).join(', ')}</strong>.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {sameCancerConflict && (
+                                            <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#fef2f2', border: '2px solid #ef4444', borderRadius: '16px', display: 'flex', gap: '12px' }}>
+                                                <div style={{ fontSize: '24px' }}>🚫</div>
+                                                <div>
+                                                    <div style={{ fontSize: '14px', fontWeight: '800', color: '#991b1b', marginBottom: '4px' }}>Enregistrement refusé — Doublon</div>
+                                                    <div style={{ fontSize: '13px', color: '#b91c1c' }}>
+                                                        Ce patient est déjà suivi pour <strong>{formData.cancer_category}</strong> à <strong>{conflictingHospital}</strong>.
+                                                        Veuillez choisir un autre type de cancer ou annuler.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -456,16 +669,31 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
                                     Continuer <ArrowRight size={18} />
                                 </button>
                             ) : (
-                                <button className="login-button" style={{ flex: 2 }} onClick={handleSubmit} disabled={loading}>
-                                    {loading ? <Loader2 className="animate-spin" size={18} /> : <UserPlus size={18} />}
-                                    {loading ? 'Finalisation...' : 'Valider l\'Admission'}
+                                <button
+                                    className="login-button"
+                                    style={{
+                                        flex: 2,
+                                        backgroundColor: sameCancerConflict ? '#94a3b8' : '#0ea5e9',
+                                        cursor: sameCancerConflict ? 'not-allowed' : 'pointer',
+                                        opacity: sameCancerConflict ? 0.7 : 1
+                                    }}
+                                    onClick={handleSubmit}
+                                    disabled={loading || sameCancerConflict}
+                                >
+                                    {loading ? <Loader2 className="animate-spin" size={18} /> : (
+                                        sameCancerConflict ? (
+                                            <>🚫 Admission Bloquée (Doublon)</>
+                                        ) : (
+                                            <><UserPlus size={18} /> Valider l'Admission</>
+                                        )
+                                    )}
                                 </button>
                             )}
                         </div>
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

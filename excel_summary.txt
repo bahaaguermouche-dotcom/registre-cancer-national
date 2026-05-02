@@ -1,0 +1,188 @@
+=== Fichier : Bilan_Packages_232_Complet.xlsx ===
+Feuilles (4) : Bilans par Phase, Suivi & Monitoring, SQL Seed, Index Rapide
+
+--- Feuille : Bilans par Phase ---
+Dimensions : 65 lignes, 10 colonnes
+Colonnes :
+  - 🏥  BILANS CLINIQUES PAR PHASE — REGISTRE DE CANCER TLEMCEN (object)
+  - Unnamed: 1 (object)
+  - Unnamed: 2 (object)
+  - Unnamed: 3 (object)
+  - Unnamed: 4 (object)
+  - Unnamed: 5 (object)
+  - Unnamed: 6 (object)
+  - Unnamed: 7 (object)
+  - Unnamed: 8 (object)
+  - Unnamed: 9 (object)
+
+Aperçu (3 premières lignes):
+                                              🏥  BILANS CLINIQUES PAR PHASE — REGISTRE DE CANCER TLEMCEN Unnamed: 1 Unnamed: 2                                 Unnamed: 3 Unnamed: 4 Unnamed: 5                              Unnamed: 6 Unnamed: 7 Unnamed: 8                                Unnamed: 9
+58 types de cancer × 4 phases = 232 protocoles cliniques validés | Sources: ESMO, ASCO, INCa, SFH, SFORL        NaN        NaN                                        NaN        NaN        NaN                                     NaN        NaN        NaN                                       NaN
+                                                                                                     NaN        NaN        NaN                                        NaN        NaN        NaN                                     NaN        NaN        NaN                                       NaN
+                                                      🟡 Bilan Initial — Aiguillage (médecin généraliste)        NaN        NaN 🔴 Confirmation — Histologie + Biomarqueurs        NaN        NaN 🟠 Bilan d'Extension — Stadification TNM        NaN        NaN 🟢 Suivi / Monitoring — Réponse + Toxicité
+
+========================================
+
+--- Feuille : Suivi & Monitoring ---
+Dimensions : 62 lignes, 7 colonnes
+Colonnes :
+  - 🟢  PROTOCOLES DE SUIVI & MONITORING — Détail par Cancer (object)
+  - Unnamed: 1 (object)
+  - Unnamed: 2 (object)
+  - Unnamed: 3 (object)
+  - Unnamed: 4 (object)
+  - Unnamed: 5 (object)
+  - Unnamed: 6 (object)
+
+Aperçu (3 premières lignes):
+                                     🟢  PROTOCOLES DE SUIVI & MONITORING — Détail par Cancer Unnamed: 1 Unnamed: 2 Unnamed: 3 Unnamed: 4 Unnamed: 5 Unnamed: 6
+Analyses de suivi sous traitement • Fréquence • Marqueurs de réponse • Surveillance toxicité        NaN        NaN        NaN        NaN        NaN        NaN
+                                                                                         NaN        NaN        NaN        NaN        NaN        NaN        NaN
+                                                                                         NaN        NaN        NaN        NaN        NaN        NaN        NaN
+
+========================================
+
+--- Feuille : SQL Seed ---
+Dimensions : 254 lignes, 1 colonnes
+Colonnes :
+  - -- ══════════════════════════════════════════════════════════════════════════ (object)
+
+Aperçu (3 premières lignes):
+-- ══════════════════════════════════════════════════════════════════════════
+                 -- SQL SEED — bilan_packages table — Registre Cancer Tlemcen
+                                      -- 232 packages (58 cancers × 4 phases)
+-- ══════════════════════════════════════════════════════════════════════════
+
+========================================
+
+--- Feuille : Index Rapide ---
+Dimensions : 61 lignes, 7 colonnes
+Colonnes :
+  - 📋  INDEX RAPIDE — Nombre d'Analyses par Cancer et par Phase (object)
+  - Unnamed: 1 (object)
+  - Unnamed: 2 (object)
+  - Unnamed: 3 (object)
+  - Unnamed: 4 (object)
+  - Unnamed: 5 (object)
+  - Unnamed: 6 (object)
+
+Aperçu (3 premières lignes):
+📋  INDEX RAPIDE — Nombre d'Analyses par Cancer et par Phase       Unnamed: 1             Unnamed: 2      Unnamed: 3      Unnamed: 4       Unnamed: 5   Unnamed: 6
+                                                        NaN              NaN                    NaN             NaN             NaN              NaN          NaN
+                                                         N°           Cancer              Sous-type Initiale\n(obl) Confirm.\n(obl) Extension\n(obl) Suivi\n(obl)
+                                                          1 Cancer du Poumon NSCLC — Adénocarcinome               5               4                9            6
+
+========================================
+
+=== Fichier : Referentiel_Cancers_v3_ICDO3_Complet.xlsx ===
+Feuilles (6) : Référentiel Cancers, CIM-O-3 Référence, Analyses par Laboratoire, SQL Seed (INSERT), Spécialités Oncologiques, Guide Technique
+
+--- Feuille : Référentiel Cancers ---
+Dimensions : 63 lignes, 16 colonnes
+Colonnes :
+  - 🏥  RÉFÉRENTIEL ONCOLOGIQUE — REGISTRE DE CANCER TLEMCEN (object)
+  - Unnamed: 1 (object)
+  - Unnamed: 2 (object)
+  - Unnamed: 3 (object)
+  - Unnamed: 4 (object)
+  - Unnamed: 5 (object)
+  - Unnamed: 6 (object)
+  - Unnamed: 7 (object)
+  - Unnamed: 8 (object)
+  - Unnamed: 9 (object)
+  - Unnamed: 10 (object)
+  - Unnamed: 11 (object)
+  - Unnamed: 12 (object)
+  - Unnamed: 13 (object)
+  - Unnamed: 14 (object)
+  - Unnamed: 15 (object)
+
+Aperçu (3 premières lignes):
+                                                                       🏥  RÉFÉRENTIEL ONCOLOGIQUE — REGISTRE DE CANCER TLEMCEN Unnamed: 1 Unnamed: 2                Unnamed: 3 Unnamed: 4 Unnamed: 5                        Unnamed: 6 Unnamed: 7 Unnamed: 8                      Unnamed: 9 Unnamed: 10 Unnamed: 11 Unnamed: 12 Unnamed: 13 Unnamed: 14 Unnamed: 15
+Standards: CIM-O-3 (IARC/OMS) | ICD-10 | TNM 8e éd. | Recommandations ENCR — Version 2.0 — Projet Registre Cancer Tlemcen 2026        NaN        NaN                       NaN        NaN        NaN                               NaN        NaN        NaN                             NaN         NaN         NaN         NaN         NaN         NaN         NaN
+                                                                                                                           NaN        NaN        NaN                       NaN        NaN        NaN                               NaN        NaN        NaN                             NaN         NaN         NaN         NaN         NaN         NaN         NaN
+                                                                                            🔴 OBL = Obligatoire (IARC minimum)        NaN        NaN 🟡 REC = Recommandé (ENCR)        NaN        NaN ⚪ OPT = Optionnel (extended data)        NaN        NaN 🔬 Anapath  |  📡 Radio  |  🧪 Bio         NaN         NaN         NaN         NaN         NaN         NaN
+
+========================================
+
+--- Feuille : CIM-O-3 Référence ---
+Dimensions : 61 lignes, 6 colonnes
+Colonnes :
+  - 📚  CIM-O-3 — Classification Internationale des Maladies pour l'Oncologie (3e édition) (object)
+  - Unnamed: 1 (object)
+  - Unnamed: 2 (object)
+  - Unnamed: 3 (object)
+  - Unnamed: 4 (object)
+  - Unnamed: 5 (object)
+
+Aperçu (3 premières lignes):
+                                            📚  CIM-O-3 — Classification Internationale des Maladies pour l'Oncologie (3e édition)      Unnamed: 1 Unnamed: 2          Unnamed: 3          Unnamed: 4   Unnamed: 5
+Format: Topographie (C xx.x) + Morphologie (M xxxx/x) — Les DEUX champs sont OBLIGATOIRES pour le registre épidémiologique (IARC)             NaN        NaN                 NaN                 NaN          NaN
+                                                                                                                              NaN             NaN        NaN                 NaN                 NaN          NaN
+                                                                                                                               N° Nom / Sous-type     CIM-10 Topographie CIM-O-3 Morphologie CIM-O-3 Comportement
+
+========================================
+
+--- Feuille : Analyses par Laboratoire ---
+Dimensions : 61 lignes, 7 colonnes
+Colonnes :
+  - 🔬 📡 🧪  CATALOGUE DES ANALYSES PAR TYPE DE LABORATOIRE (object)
+  - Unnamed: 1 (object)
+  - Unnamed: 2 (object)
+  - Unnamed: 3 (object)
+  - Unnamed: 4 (object)
+  - Unnamed: 5 (object)
+  - Unnamed: 6 (object)
+
+Aperçu (3 premières lignes):
+                                                 🔬 📡 🧪  CATALOGUE DES ANALYSES PAR TYPE DE LABORATOIRE      Unnamed: 1          Unnamed: 2   Unnamed: 3          Unnamed: 4           Unnamed: 5           Unnamed: 6
+Pour chaque type de cancer : quels examens commander, dans quel laboratoire, et quels marqueurs suivre             NaN                 NaN          NaN                 NaN                  NaN                  NaN
+                                                                                                   NaN             NaN                 NaN          NaN                 NaN                  NaN                  NaN
+                                                                                                    N° Nom / Sous-type 🔬 Anatomopathologie 📡 Radiologie 🧪 Biologie Clinique 📊 Marqueurs Tumoraux ⏱ Urgence / Priorité
+
+========================================
+
+--- Feuille : SQL Seed (INSERT) ---
+Dimensions : 91 lignes, 1 colonnes
+Colonnes :
+  - -- ════════════════════════════════════════════════════════════ (object)
+
+Aperçu (3 premières lignes):
+-- ════════════════════════════════════════════════════════════
+     -- SQL SEED — cancer_types table — Registre Cancer Tlemcen
+         -- Generated: 2026 — Source: CIM-O-3 IARC + ICD-10 OMS
+-- ════════════════════════════════════════════════════════════
+
+========================================
+
+--- Feuille : Spécialités Oncologiques ---
+Dimensions : 19 lignes, 4 colonnes
+Colonnes :
+  - 👨‍⚕️  GUIDE DES SPÉCIALITÉS ONCOLOGIQUES — Rôles et Compétences (object)
+  - Unnamed: 1 (object)
+  - Unnamed: 2 (object)
+  - Unnamed: 3 (object)
+
+Aperçu (3 premières lignes):
+👨‍⚕️  GUIDE DES SPÉCIALITÉS ONCOLOGIQUES — Rôles et Compétences                                              Unnamed: 1             Unnamed: 2                                                 Unnamed: 3
+                                                            NaN                                                     NaN                    NaN                                                        NaN
+                                                     Spécialité                                          Rôle Principal Cancers Pris en Charge                                                 Actes Clés
+                                              Oncologue médical Prescrit et supervise chimio, immuno, thérapies ciblées  Tous types de cancers Chimio, immunothérapie, thérapies ciblées, hormonothérapie
+
+========================================
+
+--- Feuille : Guide Technique ---
+Dimensions : 12 lignes, 3 colonnes
+Colonnes :
+  - 📖  GUIDE TECHNIQUE — CIM-O-3 & Standards IARC (object)
+  - Unnamed: 1 (object)
+  - Unnamed: 2 (object)
+
+Aperçu (3 premières lignes):
+📖  GUIDE TECHNIQUE — CIM-O-3 & Standards IARC                                                               Unnamed: 1                                          Unnamed: 2
+                                          NaN                                                                      NaN                                                 NaN
+                                      Concept                                                              Description                                      Exemple / Note
+                 CIM-O-3 Topographie (C xx.x) Localisation anatomique de la tumeur. Identique aux codes ICD-10 C00–C80 Exemple: C50.2 = Quadrant supérieur-externe du sein
+
+========================================
+

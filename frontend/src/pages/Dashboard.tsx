@@ -7,7 +7,7 @@ import {
     MessageSquare, UserPlus, Loader2,
     ClipboardCheck
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 
 const Dashboard: React.FC = () => {
     const [user, setUser] = useState<any>(null);
@@ -16,11 +16,7 @@ const Dashboard: React.FC = () => {
 
     async function fetchStats() {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-            const res = await axios.get('http://localhost:5000/api/dashboard/stats', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await api.get('/api/dashboard/stats');
             setStats(res.data);
         } catch (error) {
             console.error("Fetch Stats Error:", error);

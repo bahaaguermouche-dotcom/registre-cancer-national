@@ -21,7 +21,7 @@ interface UserDetailsModalProps {
 const UserDetailsModal: React.FC<UserDetailsModalProps> = ({ isOpen, onClose, user }) => {
     if (!isOpen || !user) return null;
 
-    const isWilaya = user.role.includes('Wilaya');
+    const isWilaya = user.role?.includes('Wilaya');
 
     return (
         <div style={{

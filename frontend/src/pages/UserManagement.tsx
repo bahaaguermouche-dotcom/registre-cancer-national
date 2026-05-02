@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, CheckCircle, Clock, Shield, Building, MapPin, Search, Loader2, Trash2, Eye } from 'lucide-react';
+import api from '../services/api';
 import InviteModal from '../components/InviteModal';
 import UserDetailsModal from '../components/UserDetailsModal';
-import axios from 'axios';
 
 interface User {
     id: string;
@@ -13,6 +13,8 @@ interface User {
     status: 'active' | 'pending';
     created_at: string;
     specialty?: string;
+    workplace_id?: string;
+    workplace_type?: string;
 }
 
 const UserManagement: React.FC = () => {
@@ -34,7 +36,7 @@ const UserManagement: React.FC = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/users');
+            const response = await api.get('/api/users');
             setUsers(response.data);
         } catch (error) {
             console.error("Fetch Users Error:", error);
@@ -45,7 +47,7 @@ const UserManagement: React.FC = () => {
 
     const handleApprove = async (id: string) => {
         try {
-            await axios.patch(`http://localhost:5000/api/users/${id}/approve`);
+            await api.patch(`/api/users/${id}/approve`);
             setUsers(users.map(u => u.id === id ? { ...u, status: 'active' } : u));
         } catch (error) {
             console.error("Approval Error:", error);
@@ -57,10 +59,7 @@ const UserManagement: React.FC = () => {
         if (!window.confirm(`Êtes-vous sûr de vouloir supprimer le compte de ${name} ?`)) return;
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/users/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/api/users/${id}`);
             setUsers(users.filter(u => u.id !== id));
         } catch (error: any) {
             console.error("Delete Error:", error);
@@ -82,22 +81,23 @@ const UserManagement: React.FC = () => {
 
         if (!currentUser) return false;
 
-        // National Admin sees ONLY Wilaya Supervisors and Hospital Directors
+        // National Admin sees ONLY Wilaya Supervisors, Hospital Directors and Laboratories
         if (currentUser.role === 'Administrateur National') {
             return matchesSearch && (
-                user.role.includes('Wilaya') ||
-                user.role === 'Directeur Hopital'
+                user.role?.includes('Wilaya') ||
+                user.role === 'Directeur Hopital' ||
+                user.role === 'Laboratoire'
             );
         }
 
         // Wilaya Supervisor sees everyone in their Wilaya
-        if (currentUser.role.includes('Wilaya')) {
+        if (currentUser.role?.includes('Wilaya')) {
             const userWilaya = currentUser.location;
             return matchesSearch && user.location.includes(userWilaya);
         }
 
         // Hospital Director sees everyone in their Hospital
-        if (currentUser.role.includes('Directeur')) {
+        if (currentUser.role?.includes('Directeur')) {
             const userHospital = currentUser.location;
             return matchesSearch && user.location.includes(userHospital);
         }
@@ -108,14 +108,21 @@ const UserManagement: React.FC = () => {
             return matchesSearch && user.location.includes(userHospital) && user.role === 'Médecin';
         }
 
+        // Laboratoire manager sees their own staff
+        if (currentUser.role === 'Laboratoire') {
+            return matchesSearch && user.workplace_id === currentUser.id;
+        }
+
         return false;
     });
 
-    const canInvite = currentUser?.role.includes('Directeur') ||
+    const canInvite = currentUser?.role?.includes('Directeur') ||
         currentUser?.role === 'Administrateur National' ||
+        currentUser?.role === 'Laboratoire' ||
         currentUser?.role === 'Secrétaire';
     const canDelete = currentUser?.role === 'Administrateur National' ||
         currentUser?.role === 'Directeur Hopital' ||
+        currentUser?.role === 'Laboratoire' ||
         currentUser?.role === 'Secrétaire';
 
     return (
@@ -190,7 +197,7 @@ const UserManagement: React.FC = () => {
                                     </td>
                                     <td>
                                         <div className="flex-center" style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
-                                            {user.role.includes('Wilaya') ? <Shield size={14} style={{ color: '#f59e0b' }} /> : <Building size={14} style={{ color: '#0ea5e9' }} />}
+                                            {user.role?.includes('Wilaya') ? <Shield size={14} style={{ color: '#f59e0b' }} /> : <Building size={14} style={{ color: '#0ea5e9' }} />}
                                             {user.role}
                                         </div>
                                     </td>

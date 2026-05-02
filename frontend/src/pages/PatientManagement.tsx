@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, Search, Loader2, User, UserCheck, Trash2 } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 import AddPatientModal from '../components/AddPatientModal';
 
 interface Patient {
@@ -34,10 +34,7 @@ const PatientManagement: React.FC = () => {
 
     const fetchPatients = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/patients', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/api/patients');
             setPatients(response.data);
         } catch (error) {
             console.error("Fetch Patients Error:", error);
@@ -50,10 +47,7 @@ const PatientManagement: React.FC = () => {
         if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce dossier patient ?")) return;
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/patients/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/api/patients/${id}`);
             fetchPatients();
         } catch (error: any) {
             console.error("Delete Error:", error);
