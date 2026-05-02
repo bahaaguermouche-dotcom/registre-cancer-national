@@ -1,3 +1,7 @@
+// Force IPv4 globally — Render free tier blocks outbound IPv6 connections
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
