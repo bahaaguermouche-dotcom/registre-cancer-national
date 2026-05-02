@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { X, Send, Mail, User, MapPin, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 import { ALGERIAN_WILAYAS } from '../constants/wilayas';
+import { LAB_TYPES } from '../constants/labData';
 
 interface InviteModalProps {
     isOpen: boolean;
@@ -15,16 +16,18 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [location, setLocation] = useState(ALGERIAN_WILAYAS[0]);
     const [hospitalName, setHospitalName] = useState('Hôpital Régional');
+    const [labTypes, setLabTypes] = useState<string[]>([LAB_TYPES.ANAPATH.code]);
 
     const isDirector = currentUser?.role === 'Directeur Hopital';
     const isSecretary = currentUser?.role === 'Secrétaire';
     const isNationalAdmin = currentUser?.role === 'Administrateur National';
+    const isLabManager = currentUser?.role === 'Laboratoire';
 
     const getAvailableRoles = () => {
         if (isNationalAdmin) {
-            return ['Superviseur Wilaya', 'Directeur Hopital', 'Secrétaire', 'Médecin'];
+            return ['Superviseur Wilaya', 'Directeur Hopital', 'Laboratoire', 'Secrétaire', 'Médecin'];
         }
-        if (isDirector) {
+        if (isDirector || isLabManager) {
             return ['Secrétaire', 'Médecin'];
         }
         if (isSecretary) {
@@ -36,14 +39,22 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
     const availableRoles = getAvailableRoles();
     const [role, setRole] = useState(availableRoles[0]);
 
+    const toggleLabType = (typeCode: string) => {
+        setLabTypes(prev =>
+            prev.includes(typeCode)
+                ? prev.filter(t => t !== typeCode)
+                : [...prev, typeCode]
+        );
+    };
+
     // Update form when modal opens or user context changes
     React.useEffect(() => {
         if (isOpen && currentUser) {
             const roles = getAvailableRoles();
             setRole(roles[0]);
 
-            // For Directors and Secretaries, pre-fill and lock location
-            if (isDirector || isSecretary) {
+            // For Directors, Labs and Secretaries, pre-fill and lock location
+            if (isDirector || isSecretary || isLabManager) {
                 setLocation(currentUser.location || '');
             } else if (!location || !ALGERIAN_WILAYAS.includes(location)) {
                 setLocation(ALGERIAN_WILAYAS[15]); // Default to Alger (16) or first
@@ -51,7 +62,8 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
             // Reset hospitalName when modal opens or user context changes
             setHospitalName('');
         }
-    }, [isOpen, currentUser?.role, currentUser?.location, isDirector, isSecretary, location]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -62,15 +74,28 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
 
         try {
             let finalLocation = location;
-            // Append hospital name if Admin is inviting Director
-            if (isNationalAdmin && role === 'Directeur Hopital' && hospitalName) {
+            // Append hospital/lab name if Admin is inviting Director or Laboratoire
+            if (isNationalAdmin && (role === 'Directeur Hopital' || role === 'Laboratoire') && hospitalName) {
                 finalLocation = `${location} - ${hospitalName}`;
             }
 
-            const response = await axios.post('http://localhost:5000/api/invitations/send', {
+            let workplaceId = undefined;
+            let workplaceType = undefined;
+            if (isDirector) {
+                workplaceId = currentUser.id;
+                workplaceType = 'hospital';
+            } else if (isLabManager) {
+                workplaceId = currentUser.id;
+                workplaceType = 'laboratory';
+            }
+
+            const response = await api.post('/api/invitations/send', {
                 email,
                 role,
-                location: finalLocation
+                location: finalLocation,
+                labType: role === 'Laboratoire' ? labTypes : undefined,
+                workplaceId,
+                workplaceType
             });
 
             if (response.data.success) {
@@ -123,7 +148,7 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
                 }}>
                     <div>
                         <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0 }}>
-                            {status === 'success' ? 'Invitation Envoyée !' : isDirector ? 'Inviter du personnel' : 'Inviter un Responsable'}
+                            {status === 'success' ? 'Invitation Envoyée !' : (isDirector || isLabManager) ? 'Inviter du personnel' : 'Inviter un Responsable'}
                         </h2>
                         <p style={{ fontSize: '12px', opacity: 0.8, margin: 0 }}>
                             {status === 'success' ? 'Le lien a été transmis par email.' : 'Envoyez un lien d\'inscription sécurisé'}
@@ -182,7 +207,7 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
                         <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Wilaya / Établissement</label>
                         <div style={{ position: 'relative' }}>
                             <MapPin style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
-                            {isDirector || isSecretary ? (
+                            {isDirector || isSecretary || isLabManager ? (
                                 <input
                                     type="text"
                                     readOnly
@@ -222,21 +247,61 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
                         </div>
                     </div>
 
-                    {/* Hospital Name Input for National Admin inviting Director */}
-                    {isNationalAdmin && role === 'Directeur Hopital' && (
-                        <div>
-                            <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Nom de l'Hôpital</label>
-                            <div style={{ position: 'relative' }}>
-                                <User style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
-                                <input
-                                    type="text"
-                                    placeholder="Hôpital Régional"
-                                    style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '14px' }}
-                                    value={hospitalName}
-                                    onChange={(e) => setHospitalName(e.target.value)}
-                                />
+                    {/* Hospital/Lab Name Input for National Admin inviting Director or Lab */}
+                    {isNationalAdmin && (role === 'Directeur Hopital' || role === 'Laboratoire') && (
+                        <>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
+                                    {role === 'Laboratoire' ? "Nom du Laboratoire" : "Nom de l'Hôpital"}
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                    <User style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
+                                    <input
+                                        type="text"
+                                        placeholder={role === 'Laboratoire' ? "Laboratoire Central" : "Hôpital Régional"}
+                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '14px' }}
+                                        value={hospitalName}
+                                        onChange={(e) => setHospitalName(e.target.value)}
+                                    />
+                                </div>
                             </div>
-                        </div>
+
+                            {role === 'Laboratoire' && (
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
+                                        Type(s) de Laboratoire
+                                    </label>
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '8px',
+                                        padding: '12px',
+                                        backgroundColor: '#f8fafc',
+                                        borderRadius: '12px',
+                                        border: '1px solid #e2e8f0'
+                                    }}>
+                                        {Object.values(LAB_TYPES).map(t => (
+                                            <label key={t.code} style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '10px',
+                                                fontSize: '13px',
+                                                color: '#475569',
+                                                cursor: 'pointer'
+                                            }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={labTypes.includes(t.code)}
+                                                    onChange={() => toggleLabType(t.code)}
+                                                    style={{ width: '16px', height: '16px', accentColor: '#00AAFF' }}
+                                                />
+                                                {t.label}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {status === 'error' && (
