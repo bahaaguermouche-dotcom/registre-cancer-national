@@ -1,8 +1,8 @@
 const nodemailer = require('nodemailer');
 
 const sendInvitationEmail = async (email, role, location, labType, workplaceId, workplaceType) => {
-  // Create registration link (ensure this matches your frontend URL)
-  let registrationLink = `http://localhost:5173/register?role=${role.replace(/ /g, '-')}&email=${encodeURIComponent(email)}&location=${encodeURIComponent(location)}`;
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://bahabaha2405-5d861.web.app';
+  let registrationLink = `${FRONTEND_URL}/register?role=${role.replace(/ /g, '-')}&email=${encodeURIComponent(email)}&location=${encodeURIComponent(location)}`;
 
   if (labType) {
     const labTypeStr = Array.isArray(labType) ? labType.join(',') : labType;
@@ -19,9 +19,9 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
   // Automatically detect if we should use SSL (port 465) or STARTTLS (other ports)
   const port = parseInt(process.env.MAIL_PORT || '587');
   const transporter = nodemailer.createTransport({
-    host: process.env.MAIL_HOST || 'smtp.ethereal.email',
-    port: port,
-    secure: port === 465, // true for 465 (SSL), false for other ports (STARTTLS)
+    host: process.env.MAIL_HOST || 'smtp.gmail.com',
+    port: 587,
+    secure: false, // STARTTLS (port 587) - port 465 is blocked on Render free tier
     auth: {
       user: process.env.MAIL_USER || 'placeholder@ethereal.email',
       pass: process.env.MAIL_PASS || 'placeholder_pass',
@@ -60,12 +60,12 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
 
 
 const sendLabResultNotification = async (doctorEmail, doctorName, patientName, requestId) => {
-  const portalLink = `http://localhost:5173/dashboard`; // Replace with your actual deployment URL
+  const portalLink = process.env.FRONTEND_URL || 'https://bahabaha2405-5d861.web.app';
 
   const transporter = nodemailer.createTransport({
     host: process.env.MAIL_HOST || 'smtp.ethereal.email',
-    port: parseInt(process.env.MAIL_PORT || '587'),
-    secure: process.env.MAIL_PORT === '465',
+    port: 587,
+    secure: false, // STARTTLS (port 587) - port 465 is blocked on Render free tier
     auth: {
       user: process.env.MAIL_USER || 'placeholder@ethereal.email',
       pass: process.env.MAIL_PASS || 'placeholder_pass',
