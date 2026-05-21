@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 # Copy package management files to leverage layer caching
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Copy application files
 COPY . .
