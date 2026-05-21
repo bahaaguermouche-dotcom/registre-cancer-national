@@ -3,12 +3,13 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     PieChart, Pie, Cell, LineChart, Line, AreaChart, Area,
     RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-    ScatterChart, Scatter, ZAxis, ComposedChart
+    ScatterChart, Scatter, ZAxis, ComposedChart, Treemap,
+    FunnelChart, Funnel, LabelList
 } from 'recharts';
 import {
     Map, Users, Download, TrendingUp,
     RefreshCw, ChevronRight, Activity, Database, Save, BarChart3, PieChart as PieIcon, List,
-    Filter, FileSpreadsheet, Target, AlertTriangle, ArrowUpRight
+    Filter, FileSpreadsheet, Target, AlertTriangle, ArrowUpRight, Layers, Heart
 } from 'lucide-react';
 import api from '../services/api';
 import PopulationDatasetModal from '../components/PopulationDatasetModal';
@@ -118,6 +119,14 @@ const ResearchAnalytics: React.FC = () => {
     const [pendingZone, setPendingZone] = useState<any>(null);
     const [correlationResults, setCorrelationResults] = useState<any[]>([]);
     const [correlationLoading, setCorrelationLoading] = useState(false);
+
+    // Advanced Analytics States
+    const [pyramidData, setPyramidData] = useState<any[]>([]);
+    const [stageData, setStageData] = useState<any[]>([]);
+    const [treemapData, setTreemapData] = useState<any[]>([]);
+    const [miRatioData, setMiRatioData] = useState<any[]>([]);
+    const [advancedKpis, setAdvancedKpis] = useState<any>(null);
+    const [advancedLoading, setAdvancedLoading] = useState(false);
 
     const [config, setConfig] = useState<any>({
         dataSource: 'cancer_cases',
@@ -244,10 +253,33 @@ const ResearchAnalytics: React.FC = () => {
 
             // fetchMapData is now triggered by useEffect
             fetchRiskZones();
+            fetchAdvancedAnalytics();
         } catch (error) {
             console.error("Init Error:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchAdvancedAnalytics = async (filters: any = config) => {
+        setAdvancedLoading(true);
+        try {
+            const [pyramidRes, stageRes, treemapRes, miRes, advKpisRes] = await Promise.all([
+                api.get('/api/stats/age-pyramid', { params: filters }).catch(() => ({ data: [] })),
+                api.get('/api/stats/stage-distribution', { params: filters }).catch(() => ({ data: [] })),
+                api.get('/api/stats/treemap', { params: filters }).catch(() => ({ data: [] })),
+                api.get('/api/stats/mi-ratio', { params: filters }).catch(() => ({ data: [] })),
+                api.get('/api/stats/advanced-kpis', { params: filters }).catch(() => ({ data: null }))
+            ]);
+            setPyramidData(pyramidRes.data.map((d: any) => ({ ...d, male: -(d.male || 0), female: d.female || 0 })));
+            setStageData(stageRes.data);
+            setTreemapData(treemapRes.data);
+            setMiRatioData(miRes.data);
+            setAdvancedKpis(advKpisRes.data);
+        } catch (err) {
+            console.error("Advanced Analytics Error:", err);
+        } finally {
+            setAdvancedLoading(false);
         }
     };
 
@@ -344,6 +376,9 @@ const ResearchAnalytics: React.FC = () => {
 
             setQueryResult(sanitizedData);
             if (config.groupBy === 'trend') fetchForecast();
+            
+            // Also update advanced analytics to match filters
+            fetchAdvancedAnalytics();
         } catch (error: any) {
             console.error("Query Error:", error);
             const msg = error?.response?.data?.error;
@@ -452,6 +487,40 @@ const ResearchAnalytics: React.FC = () => {
                 genderDistribution: [{label: 'Homme', value: 12000}, {label: 'Femme', value: 15000}],
                 monthlyTrend: [{label: 'M-1', value: 1200}, {label: 'M', value: 1500}]
             });
+            // Advanced mock data
+            setAdvancedKpis({ medianAge: 54, prevalence: 18200, newThisMonth: 342, maleCount: 12000, femaleCount: 15000, sexRatio: '0.80' });
+            setPyramidData([
+                { age_group: '0-4', male: -5, female: 3 }, { age_group: '5-9', male: -8, female: 6 },
+                { age_group: '10-14', male: -12, female: 10 }, { age_group: '15-19', male: -25, female: 20 },
+                { age_group: '20-24', male: -45, female: 55 }, { age_group: '25-29', male: -80, female: 120 },
+                { age_group: '30-34', male: -150, female: 280 }, { age_group: '35-39', male: -320, female: 480 },
+                { age_group: '40-44', male: -520, female: 750 }, { age_group: '45-49', male: -780, female: 980 },
+                { age_group: '50-54', male: -1100, female: 1200 }, { age_group: '55-59', male: -1350, female: 1100 },
+                { age_group: '60-64', male: -1500, female: 900 }, { age_group: '65-69', male: -1200, female: 700 },
+                { age_group: '70-74', male: -900, female: 500 }, { age_group: '75-79', male: -600, female: 300 },
+                { age_group: '80+', male: -350, female: 200 }
+            ]);
+            setStageData([
+                { label: 'Stade I', value: 3200 }, { label: 'Stade II', value: 5800 },
+                { label: 'Stade III', value: 4100 }, { label: 'Stade IV', value: 2900 },
+                { label: 'Non précisé', value: 1500 }
+            ]);
+            setTreemapData([
+                { name: 'Sein', size: 4500, children: [{ name: 'Alger', size: 1200 }, { name: 'Oran', size: 800 }, { name: 'Constantine', size: 600 }] },
+                { name: 'Colorectal', size: 3200, children: [{ name: 'Alger', size: 900 }, { name: 'Tlemcen', size: 500 }] },
+                { name: 'Poumon', size: 2800, children: [{ name: 'Alger', size: 800 }, { name: 'Annaba', size: 400 }] },
+                { name: 'Prostate', size: 2100, children: [{ name: 'Alger', size: 600 }] },
+                { name: 'Estomac', size: 1500, children: [{ name: 'Sétif', size: 400 }] },
+                { name: 'Thyroïde', size: 1200, children: [{ name: 'Tizi Ouzou', size: 350 }] }
+            ]);
+            setMiRatioData([
+                { label: 'Poumon', mi_ratio: 72.5, total_cases: 2800, deaths: 2030 },
+                { label: 'Estomac', mi_ratio: 58.3, total_cases: 1500, deaths: 875 },
+                { label: 'Foie', mi_ratio: 55.0, total_cases: 800, deaths: 440 },
+                { label: 'Colorectal', mi_ratio: 35.2, total_cases: 3200, deaths: 1126 },
+                { label: 'Sein', mi_ratio: 18.4, total_cases: 4500, deaths: 828 },
+                { label: 'Thyroïde', mi_ratio: 5.8, total_cases: 1200, deaths: 70 }
+            ]);
             handleGenerate();
             fetchMapData();
         } else {
@@ -459,6 +528,7 @@ const ResearchAnalytics: React.FC = () => {
                 api.get(`/api/stats/global`).then(res => setKpis(res.data)).catch(() => {});
                 handleGenerate();
                 fetchMapData();
+                fetchAdvancedAnalytics();
             }
         }
     }, [isDemoMode]);
@@ -477,14 +547,101 @@ const ResearchAnalytics: React.FC = () => {
         );
     };
 
+    const isAdvancedChart = (type: string) => ['pyramid', 'funnel', 'treemap', 'mi_ratio'].includes(type);
+
     const renderChart = () => {
-        if (generating) {
+        if (generating && !isAdvancedChart(config.chartType)) {
             return (
                 <div className="analytics-chart-placeholder">
                     <RefreshCw className="animate-spin" size={32} color="#2563eb" />
                 </div>
             );
         }
+
+        // ── Advanced chart types (use dedicated data) ──
+        if (config.chartType === 'pyramid') {
+            if (pyramidData.length === 0) return <div className="analytics-chart-placeholder" style={{ color: '#94a3b8' }}>{advancedLoading ? <><RefreshCw className="animate-spin" size={24} /> Chargement...</> : "Aucune donnée d'âge disponible. Activez le Mode Démo."}</div>;
+            return (
+                <div className="analytics-chart-container">
+                    <ResponsiveContainer width="100%" height={450}>
+                        <BarChart data={pyramidData} layout="vertical" stackOffset="sign" margin={{ top: 10, right: 30, left: 50, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                            <XAxis type="number" tickFormatter={(v) => Math.abs(v).toString()} tick={{ fontSize: 11, fill: '#64748b' }} />
+                            <YAxis type="category" dataKey="age_group" tick={{ fontSize: 10, fill: '#64748b' }} width={50} />
+                            <Tooltip formatter={(value: any) => Math.abs(value)} />
+                            <Legend />
+                            <Bar dataKey="male" name="Hommes" fill="#3b82f6" stackId="stack" radius={[4, 0, 0, 4]} />
+                            <Bar dataKey="female" name="Femmes" fill="#ec4899" stackId="stack" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            );
+        }
+
+        if (config.chartType === 'funnel') {
+            if (stageData.length === 0) return <div className="analytics-chart-placeholder" style={{ color: '#94a3b8' }}>{advancedLoading ? <><RefreshCw className="animate-spin" size={24} /> Chargement...</> : "Aucune donnée de stade disponible. Activez le Mode Démo."}</div>;
+            return (
+                <div className="analytics-chart-container">
+                    <ResponsiveContainer width="100%" height={400}>
+                        <FunnelChart>
+                            <Tooltip formatter={(value: any) => value.toLocaleString()} />
+                            <Funnel dataKey="value" data={stageData.map((d: any, i: number) => ({ ...d, fill: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#7c3aed', '#64748b'][i % 6] }))} isAnimationActive>
+                                <LabelList position="center" fill="#fff" fontSize={13} fontWeight={700} formatter={(v: any) => v} dataKey="label" />
+                            </Funnel>
+                        </FunnelChart>
+                    </ResponsiveContainer>
+                </div>
+            );
+        }
+
+        if (config.chartType === 'treemap') {
+            if (treemapData.length === 0) return <div className="analytics-chart-placeholder" style={{ color: '#94a3b8' }}>{advancedLoading ? <><RefreshCw className="animate-spin" size={24} /> Chargement...</> : "Aucune donnée disponible. Activez le Mode Démo."}</div>;
+            return (
+                <div className="analytics-chart-container">
+                    <ResponsiveContainer width="100%" height={400}>
+                        <Treemap data={treemapData} dataKey="size" aspectRatio={4/3} stroke="#fff"
+                            content={({ x, y, width, height, name, value, index }: any) => {
+                                if (width < 30 || height < 20) return null;
+                                return (
+                                    <g>
+                                        <rect x={x} y={y} width={width} height={height} style={{ fill: COLORS[index % COLORS.length], stroke: '#fff', strokeWidth: 2, rx: 4 }} />
+                                        {width > 60 && height > 30 && (
+                                            <>
+                                                <text x={x + width / 2} y={y + height / 2 - 6} textAnchor="middle" fill="#fff" fontSize={width > 120 ? 12 : 10} fontWeight={700}>{name}</text>
+                                                <text x={x + width / 2} y={y + height / 2 + 10} textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize={10}>{value}</text>
+                                            </>
+                                        )}
+                                    </g>
+                                );
+                            }}
+                        />
+                    </ResponsiveContainer>
+                </div>
+            );
+        }
+
+        if (config.chartType === 'mi_ratio') {
+            if (miRatioData.length === 0) return <div className="analytics-chart-placeholder" style={{ color: '#94a3b8' }}>{advancedLoading ? <><RefreshCw className="animate-spin" size={24} /> Chargement...</> : "Aucune donnée de mortalité disponible. Activez le Mode Démo."}</div>;
+            return (
+                <div className="analytics-chart-container">
+                    <ResponsiveContainer width="100%" height={400}>
+                        <BarChart data={miRatioData} layout="vertical" margin={{ top: 10, right: 30, left: 80, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                            <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 11, fill: '#64748b' }} />
+                            <YAxis type="category" dataKey="label" tick={{ fontSize: 11, fill: '#1e293b', fontWeight: 600 }} width={75} />
+                            <Tooltip formatter={(value: any) => `${value}%`} />
+                            <Bar dataKey="mi_ratio" name="Ratio M/I (%)" radius={[0, 6, 6, 0]} maxBarSize={24}>
+                                {miRatioData.map((entry: any, index: number) => (
+                                    <Cell key={`mi-cell-${index}`} fill={entry.mi_ratio > 50 ? '#ef4444' : entry.mi_ratio > 30 ? '#f59e0b' : '#22c55e'} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            );
+        }
+
+        // ── Standard chart types ──
         if (queryResult.length === 0) {
             return (
                 <div className="analytics-chart-placeholder" style={{ color: '#94a3b8' }}>
@@ -757,6 +914,24 @@ const ResearchAnalytics: React.FC = () => {
             </div>
 
             <KPISection data={kpis} />
+
+            {/* Compact Advanced KPIs inline */}
+            {advancedKpis && (
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', padding: '0 24px', marginBottom: '16px', marginTop: '-8px' }}>
+                    {[
+                        { label: 'Âge Médian', value: `${advancedKpis.medianAge} ans`, color: '#2563eb' },
+                        { label: 'Prévalence', value: advancedKpis.prevalence?.toLocaleString(), color: '#059669' },
+                        { label: 'Nouveaux ce mois', value: advancedKpis.newThisMonth?.toLocaleString(), color: '#dc2626' },
+                        { label: 'Sex-Ratio (H/F)', value: advancedKpis.sexRatio, color: '#7c3aed' },
+                    ].map((kpi, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', borderRadius: '10px', padding: '8px 14px', border: '1px solid #e2e8f0', fontSize: '12px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: kpi.color, flexShrink: 0 }} />
+                            <span style={{ color: '#64748b', fontWeight: 500 }}>{kpi.label}:</span>
+                            <span style={{ color: '#0f172a', fontWeight: 800 }}>{kpi.value || '—'}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             <div className="analytics-main-grid">
                 <div className="analytics-content">
@@ -1147,12 +1322,14 @@ const ResearchAnalytics: React.FC = () => {
                                         { id: 'radar', icon: <Target size={18} />, label: 'Radar' },
                                         { id: 'scatter', icon: <Users size={18} />, label: 'Nuage' },
                                         { id: 'composed', icon: <List size={18} />, label: 'Combiné' },
+                                        { id: 'pyramid', icon: <Layers size={18} />, label: 'Pyramide' },
+                                        { id: 'funnel', icon: <Filter size={18} />, label: 'Entonnoir' },
+                                        { id: 'treemap', icon: <Database size={18} />, label: 'Treemap' },
+                                        { id: 'mi_ratio', icon: <Heart size={18} />, label: 'Ratio M/I' },
                                     ].map(item => (
                                         <button key={item.id} onClick={() => setConfig({ ...config, chartType: item.id })} className={`analytics-viz-btn ${config.chartType === item.id ? 'active' : ''}`} title={item.label}>
-                                            <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                                                {item.icon}
-                                                <span style={{ fontSize: '10px' }}>{item.label}</span>
-                                            </span>
+                                            {item.icon}
+                                            <span>{item.label}</span>
                                         </button>
                                     ))}
                                 </div>

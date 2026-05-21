@@ -10,7 +10,7 @@ const forceInit = async () => {
         // 2. Table Patients
         await db.query(`
             CREATE TABLE IF NOT EXISTS patients (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name TEXT NOT NULL,
                 first_name TEXT,
                 last_name TEXT,

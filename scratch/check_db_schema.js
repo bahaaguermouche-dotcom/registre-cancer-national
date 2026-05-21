@@ -1,32 +1,27 @@
-const db = require('./backend/src/config/db');
+const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config({ path: path.join(__dirname, '../backend/.env') });
 
-async function checkSchema() {
+const { Pool } = require('pg');
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+async function checkIndexes() {
     try {
-        const res = await db.query(`
-            SELECT column_name, data_type, is_nullable
-            FROM information_schema.columns
-            WHERE table_name = 'patients';
-        `);
-        console.log('--- Patients Table Schema ---');
-        res.rows.forEach(row => {
-            console.log(`${row.column_name}: ${row.data_type} (Nullable: ${row.is_nullable})`);
-        });
+        const res = await pool.query("SELECT indexdef FROM pg_indexes WHERE tablename = 'patient_hospital_links'");
+        console.log("Indexes for patient_hospital_links:");
+        console.log(JSON.stringify(res.rows, null, 2));
         
-        const resLink = await db.query(`
-            SELECT column_name, data_type, is_nullable
-            FROM information_schema.columns
-            WHERE table_name = 'patient_hospital_links';
-        `);
-        console.log('\n--- Patient Hospital Links Schema ---');
-        resLink.rows.forEach(row => {
-            console.log(`${row.column_name}: ${row.data_type} (Nullable: ${row.is_nullable})`);
-        });
-        
-        process.exit(0);
+        const tables = await pool.query("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
+        console.log("\nAvailable tables:");
+        console.log(JSON.stringify(tables.rows.map(r => r.tablename), null, 2));
     } catch (err) {
-        console.error(err);
-        process.exit(1);
+        console.error("Error:", err);
+    } finally {
+        await pool.end();
     }
 }
 
-checkSchema();
+checkIndexes();

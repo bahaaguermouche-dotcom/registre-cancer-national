@@ -73,7 +73,80 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
         const seedCoordinates = require('./config/seed_patient_coordinates');
         await seedCoordinates();
 
-        console.log("✅ Systèmes de Sécurité, Zones à Risque et Géolocalisation Prêts");
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS ignored_duplicates (
+                id SERIAL PRIMARY KEY,
+                patient_id_1 UUID NOT NULL,
+                patient_id_2 UUID NOT NULL,
+                ignored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                ignored_by UUID,
+                UNIQUE(patient_id_1, patient_id_2)
+            );
+        `);
+
+        // Fix for Merge Conflict: Ensure the index for ON CONFLICT exists
+        await db.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_phl_unique_patient_hosp_cancer 
+            ON patient_hospital_links (patient_id, hospital_id, LOWER(cancer_type));
+        `);
+
+        // --- CANCER DIAGNOSIS & BODY MAP TABLES ---
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS ref_topography_map (
+                id SERIAL PRIMARY KEY,
+                topography_code VARCHAR(10) UNIQUE NOT NULL,
+                label_fr VARCHAR(200) NOT NULL,
+                body_region VARCHAR(50) NOT NULL,
+                organ VARCHAR(100) NOT NULL,
+                organ_zone VARCHAR(100),
+                side VARCHAR(20) DEFAULT 'both'
+            );
+        `);
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS cancer_diagnoses (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+                topography_code VARCHAR(10),
+                morphology_code VARCHAR(10),
+                tnm_t VARCHAR(10),
+                tnm_n VARCHAR(10),
+                tnm_m VARCHAR(10),
+                stade_global VARCHAR(10),
+                grade VARCHAR(50),
+                lateralite VARCHAR(20),
+                body_region VARCHAR(50),
+                organ VARCHAR(100),
+                organ_zone VARCHAR(100),
+                diagnosed_by UUID REFERENCES users(id),
+                diagnosis_date DATE DEFAULT CURRENT_DATE,
+                notes TEXT,
+                lab_request_id UUID REFERENCES lab_requests(id) ON DELETE SET NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Seed basic topography maps if empty
+        const mapCheck = await db.query('SELECT count(*) FROM ref_topography_map');
+        if (parseInt(mapCheck.rows[0].count) === 0) {
+            await db.query(`
+                INSERT INTO ref_topography_map (topography_code, label_fr, body_region, organ, organ_zone, side) VALUES
+                ('C34', 'Poumon, SAI', 'thorax', 'poumon', NULL, 'both'),
+                ('C34.1', 'Lobe supérieur du poumon', 'thorax', 'poumon', 'lobe_superieur', 'both'),
+                ('C34.2', 'Lobe moyen du poumon', 'thorax', 'poumon', 'lobe_moyen', 'right'),
+                ('C34.3', 'Lobe inférieur du poumon', 'thorax', 'poumon', 'lobe_inferieur', 'both'),
+                ('C50', 'Sein, SAI', 'thorax', 'sein', NULL, 'both'),
+                ('C50.4', 'Quadrant supéro-externe du sein', 'thorax', 'sein', 'quadrant_supero_externe', 'both'),
+                ('C18', 'Côlon', 'abdomen', 'colon', NULL, 'na'),
+                ('C18.2', 'Côlon ascendant', 'abdomen', 'colon', 'colon_ascendant', 'na'),
+                ('C61', 'Prostate', 'pelvis', 'prostate', NULL, 'na'),
+                ('C73', 'Glande thyroïde', 'tete_cou', 'thyroide', NULL, 'na'),
+                ('C16', 'Estomac', 'abdomen', 'estomac', NULL, 'na')
+            `);
+        }
+
+        console.log("✅ Systèmes de Sécurité, Zones à Risque, Géolocalisation, Doublons et Body Map Prêts");
     } catch (err) {
         console.error("Initialization failed", err);
     }
@@ -493,6 +566,186 @@ app.post('/api/patients/check-duplicates', async (req, res) => {
         res.status(500).json({ error: "Erreur vérification" });
     }
 });
+
+// GET /api/patients/duplicates/potential – List suspected duplicate patient records
+app.get('/api/patients/duplicates/potential', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "Non autorisé" });
+
+    try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        if (decoded.role !== 'Administrateur National' && decoded.role !== 'Directeur Hopital') {
+            return res.status(403).json({ error: "Accès réservé aux administrateurs." });
+        }
+
+        // Potential duplicates based on:
+        // 1. Same NIN (if not null)
+        // 2. Same CNAS (if not null)
+        // 3. Same (First Name + Last Name + Birth Date)
+        // Excluding already ignored pairs
+        const query = `
+            WITH Suspects AS (
+                -- Same NIN (ignoring empty/placeholders)
+                SELECT p1.id as id1, p2.id as id2, 'Identifiant National identique' as reason
+                FROM patients p1
+                JOIN patients p2 ON p1.national_id = p2.national_id AND p1.id < p2.id
+                WHERE p1.national_id IS NOT NULL 
+                  AND p1.national_id != '' 
+                  AND p1.national_id != '---'
+                  AND LENGTH(TRIM(p1.national_id)) > 3
+                
+                UNION
+                
+                -- Same CNAS (ignoring empty/placeholders)
+                SELECT p1.id as id1, p2.id as id2, 'Numéro CNAS identique' as reason
+                FROM patients p1
+                JOIN patients p2 ON p1.cnas_number = p2.cnas_number AND p1.id < p2.id
+                WHERE p1.cnas_number IS NOT NULL 
+                  AND p1.cnas_number != '' 
+                  AND p1.cnas_number != '---'
+                  AND LENGTH(TRIM(p1.cnas_number)) > 3
+                
+                UNION
+                
+                -- Same Name + Birth Date
+                SELECT p1.id as id1, p2.id as id2, 'Nom, Prénom et Date de naissance identiques' as reason
+                FROM patients p1
+                JOIN patients p2 ON 
+                    LOWER(p1.first_name) = LOWER(p2.first_name) AND 
+                    LOWER(p1.last_name) = LOWER(p2.last_name) AND 
+                    p1.birth_date = p2.birth_date AND 
+                    p1.id < p2.id
+                WHERE p1.first_name IS NOT NULL AND p1.first_name != ''
+            )
+            SELECT s.*, 
+                   p1.name as name1, p1.hospital_location as loc1, p1.created_at as date1,
+                   p2.name as name2, p2.hospital_location as loc2, p2.created_at as date2
+            FROM Suspects s
+            JOIN patients p1 ON s.id1 = p1.id
+            JOIN patients p2 ON s.id2 = p2.id
+            LEFT JOIN ignored_duplicates i ON 
+                (i.patient_id_1 = s.id1 AND i.patient_id_2 = s.id2) OR 
+                (i.patient_id_1 = s.id2 AND i.patient_id_2 = s.id1)
+            WHERE i.id IS NULL
+            ORDER BY s.reason;
+        `;
+
+        const result = await db.query(query);
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Fetch Potential Duplicates Error:", error);
+        res.status(500).json({ error: "Erreur lors de la détection des doublons." });
+    }
+});
+
+// POST /api/patients/merge – Fusionner deux dossiers patients
+app.post('/api/patients/merge', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "Non autorisé" });
+
+    const { master_id, slave_id, kept_data } = req.body;
+
+    if (!master_id || !slave_id) {
+        return res.status(400).json({ error: "Identifiants master et slave requis." });
+    }
+
+    try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        if (decoded.role !== 'Administrateur National' && decoded.role !== 'Directeur Hopital') {
+            return res.status(403).json({ error: "Accès réservé aux administrateurs." });
+        }
+
+        // Start Transaction
+        await db.query('BEGIN');
+
+        // 1. Update slave data into master if requested (kept_data contains field names)
+        if (kept_data && Object.keys(kept_data).length > 0) {
+            const updates = [];
+            const values = [];
+            let i = 1;
+            for (const [field, value] of Object.entries(kept_data)) {
+                updates.push(`${field} = $${i++}`);
+                values.push(value);
+            }
+            values.push(master_id);
+            await db.query(`UPDATE patients SET ${updates.join(', ')} WHERE id = $${i}`, values);
+        }
+
+        // 2. Re-parent all related records
+        const tablesToUpdate = [
+            { name: 'diagnostics', col: 'patient_id' },
+            { name: 'medical_records', col: 'patient_id' },
+            { name: 'tumors', col: 'patient_id' },
+            { name: 'patient_hospital_links', col: 'patient_id' },
+            { name: 'lab_requests', col: 'patient_id' },
+            { name: 'rcp_messages', col: 'patient_id' }
+        ];
+
+        for (const table of tablesToUpdate) {
+            // Special handling for patient_hospital_links to avoid unique constraint violations
+            if (table.name === 'patient_hospital_links') {
+                // Only move links if the master doesn't have a link for that hospital+cancer yet
+                // For simplicity, we move everything and let the unique constraint error if it exists, 
+                // but we should probably handle it gracefully.
+                await db.query(`
+                    INSERT INTO patient_hospital_links (patient_id, hospital_id, hospital_name, hospital_location, cancer_type, doctor_id, doctor_name, created_at)
+                    SELECT $1, hospital_id, hospital_name, hospital_location, cancer_type, doctor_id, doctor_name, created_at
+                    FROM patient_hospital_links WHERE patient_id = $2
+                    ON CONFLICT (patient_id, hospital_id, LOWER(cancer_type)) DO NOTHING
+                `, [master_id, slave_id]);
+                await db.query(`DELETE FROM patient_hospital_links WHERE patient_id = $1`, [slave_id]);
+            } else {
+                await db.query(`UPDATE ${table.name} SET ${table.col} = $1 WHERE ${table.col} = $2`, [master_id, slave_id]);
+            }
+        }
+
+        // 3. Delete slave patient
+        await db.query('DELETE FROM patients WHERE id = $1', [slave_id]);
+
+        // 4. Log Audit
+        await logAudit(decoded.id, decoded.name, decoded.role, 'MERGE', 'patients', master_id, {
+            slave_id: slave_id,
+            master_id: master_id,
+            reason: "Fusion de doublons manuelle"
+        });
+
+        await db.query('COMMIT');
+        res.json({ success: true, message: "Fusion effectuée avec succès." });
+
+    } catch (error) {
+        await db.query('ROLLBACK');
+        console.error("Merge Patients Error:", error);
+        res.status(500).json({ error: "Erreur lors de la fusion des patients : " + error.message });
+    }
+});
+
+// POST /api/patients/duplicates/ignore – Marquer un couple comme non-doublon
+app.post('/api/patients/duplicates/ignore', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "Non autorisé" });
+
+    const { patient_id_1, patient_id_2 } = req.body;
+
+    try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        await db.query(
+            'INSERT INTO ignored_duplicates (patient_id_1, patient_id_2, ignored_by) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+            [patient_id_1, patient_id_2, decoded.id]
+        );
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Ignore Duplicate Error:", error);
+        res.status(500).json({ error: "Erreur lors de l'opération." });
+    }
+});
+
 
 
 // POST /api/patients – Register a new patient OR link an existing one (cross-hospital merge)
@@ -2557,20 +2810,25 @@ app.get('/api/stats/query', authenticateToken, async (req, res) => {
 
         const whereString = whereClauses.length > 0 ? ' WHERE ' + whereClauses.join(' AND ') : '';
         
-        if (dataSource === 'cancer_cases') {
-            if (groupBy === 'trend') {
-                query = `SELECT TO_CHAR(created_at, 'YYYY-MM') as label, count(*) as value FROM patients ${whereString} GROUP BY label ORDER BY label ASC`;
-            } else {
-                const groupCol = groupBy === 'wilaya' ? 'wilaya_residence' :
-                                 groupBy === 'age' ? 'age' :
-                                 groupBy === 'gender' ? 'gender' :
-                                 groupBy === 'cancer_type' ? 'cancer_type' : 'wilaya_residence';
-
-                query = `SELECT ${groupCol} as label, count(*) as value FROM patients ${whereString} GROUP BY label`;
-            }
-        } else {
-            query = `SELECT count(*) as value, 'Total' as label FROM patients ${whereString}`;
+        // Add status filter based on dataSource
+        let finalWhere = whereString;
+        if (dataSource === 'mortality') {
+            finalWhere += (finalWhere ? ' AND ' : ' WHERE ') + "status = 'Décédé'";
+        } else if (dataSource === 'prevalence') {
+            finalWhere += (finalWhere ? ' AND ' : ' WHERE ') + "(status != 'Décédé' OR status IS NULL)";
         }
+
+        const groupCol = groupBy === 'wilaya' ? 'wilaya_residence' :
+                         groupBy === 'age' ? 'age' :
+                         groupBy === 'gender' ? 'gender' :
+                         groupBy === 'cancer_type' ? 'cancer_type' : 'wilaya_residence';
+
+        if (groupBy === 'trend') {
+            query = `SELECT TO_CHAR(created_at, 'YYYY-MM') as label, count(*) as value FROM patients ${finalWhere} GROUP BY label ORDER BY label ASC`;
+        } else {
+            query = `SELECT ${groupCol} as label, count(*) as value FROM patients ${finalWhere} GROUP BY label`;
+        }
+
 
         const result = await db.query(query, params);
         res.json(result.rows);
@@ -2649,6 +2907,194 @@ app.get('/api/stats/cancers', authenticateToken, async (req, res) => {
         res.json(result.rows.map(r => r.cancer_type));
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// --- ADVANCED STATISTICS (GLOBOCAN-inspired) ---
+
+const getStatsFilters = (req) => {
+    const { cancerType, wilaya, period, startDate, endDate, dataSource } = req.query;
+    let params = [];
+    let whereClauses = [];
+
+    if (cancerType && cancerType !== 'all') {
+        params.push(cancerType);
+        whereClauses.push(`cancer_type = $${params.length}`);
+    }
+
+    if (wilaya && wilaya !== 'all') {
+        params.push(wilaya);
+        whereClauses.push(`wilaya_residence = $${params.length}`);
+    }
+
+    if (period === 'month') {
+        whereClauses.push("created_at >= NOW() - INTERVAL '1 month'");
+    } else if (period === 'year') {
+        whereClauses.push("created_at >= NOW() - INTERVAL '1 year'");
+    } else if (startDate && endDate) {
+        params.push(startDate);
+        whereClauses.push(`created_at >= $${params.length}`);
+        params.push(endDate);
+        whereClauses.push(`created_at <= $${params.length}`);
+    }
+
+    // Handle dataSource (e.g., mortality)
+    if (dataSource === 'mortality') {
+        whereClauses.push("status = 'Décédé'");
+    }
+
+    return {
+        whereString: whereClauses.length > 0 ? ' WHERE ' + whereClauses.join(' AND ') : '',
+        params
+    };
+};
+
+// 1. Age-Gender Pyramid (Population Pyramid)
+app.get('/api/stats/age-pyramid', authenticateToken, async (req, res) => {
+    try {
+        const { whereString, params } = getStatsFilters(req);
+        const ageCase = `
+            CASE 
+                WHEN age < 5 THEN '0-4' WHEN age < 10 THEN '5-9' WHEN age < 15 THEN '10-14'
+                WHEN age < 20 THEN '15-19' WHEN age < 25 THEN '20-24' WHEN age < 30 THEN '25-29'
+                WHEN age < 35 THEN '30-34' WHEN age < 40 THEN '35-39' WHEN age < 45 THEN '40-44'
+                WHEN age < 50 THEN '45-49' WHEN age < 55 THEN '50-54' WHEN age < 60 THEN '55-59'
+                WHEN age < 65 THEN '60-64' WHEN age < 70 THEN '65-69' WHEN age < 75 THEN '70-74'
+                WHEN age < 80 THEN '75-79' ELSE '80+' 
+            END`;
+        const result = await db.query(`
+            SELECT ${ageCase} as age_group, 
+                   SUM(CASE WHEN gender IN ('Homme', 'Male') THEN 1 ELSE 0 END)::int as male,
+                   SUM(CASE WHEN gender IN ('Femme', 'Female') THEN 1 ELSE 0 END)::int as female
+            FROM patients 
+            ${whereString} ${whereString ? 'AND' : 'WHERE'} age IS NOT NULL
+            GROUP BY ${ageCase}
+            ORDER BY MIN(COALESCE(age, 0))
+        `, params);
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Age Pyramid Error:", err);
+        res.status(500).json({ error: "Erreur lors du calcul de la pyramide des âges" });
+    }
+});
+
+// 2. Stage Distribution (Funnel/Bar)
+app.get('/api/stats/stage-distribution', authenticateToken, async (req, res) => {
+    try {
+        const { whereString, params } = getStatsFilters(req);
+        // We join with patients for tumors and diagnoses to apply global filters (wilaya, period, etc)
+        const tumorStages = await db.query(`
+            SELECT t.stage as label, COUNT(*)::int as value
+            FROM tumors t
+            JOIN patients p ON t.patient_id = p.id
+            ${whereString} ${whereString ? 'AND' : 'WHERE'} t.stage IS NOT NULL AND t.stage != ''
+            GROUP BY t.stage ORDER BY value DESC
+        `, params);
+        
+        if (tumorStages.rows.length > 0) {
+            return res.json(tumorStages.rows);
+        }
+
+        const diagStages = await db.query(`
+            SELECT d.stade_global as label, COUNT(*)::int as value
+            FROM cancer_diagnoses d
+            JOIN patients p ON d.patient_id = p.id
+            ${whereString} ${whereString ? 'AND' : 'WHERE'} d.stade_global IS NOT NULL AND d.stade_global != ''
+            GROUP BY d.stade_global ORDER BY value DESC
+        `, params);
+        res.json(diagStages.rows);
+    } catch (err) {
+        console.error("Stage Distribution Error:", err);
+        res.status(500).json({ error: "Erreur lors du calcul de la distribution des stades" });
+    }
+});
+
+// 3. Top Cancers Treemap (hierarchical with wilaya sub-groups)
+app.get('/api/stats/treemap', authenticateToken, async (req, res) => {
+    try {
+        const { whereString, params } = getStatsFilters(req);
+        const result = await db.query(`
+            SELECT cancer_type, wilaya_residence as wilaya, COUNT(*)::int as count
+            FROM patients 
+            ${whereString} ${whereString ? 'AND' : 'WHERE'} cancer_type IS NOT NULL
+            GROUP BY cancer_type, wilaya_residence
+            ORDER BY count DESC
+        `, params);
+        
+        // Group into treemap hierarchy
+        const cancerMap = {};
+        result.rows.forEach(row => {
+            if (!cancerMap[row.cancer_type]) {
+                cancerMap[row.cancer_type] = { name: row.cancer_type, children: [], total: 0 };
+            }
+            cancerMap[row.cancer_type].children.push({ name: row.wilaya || 'Inconnu', size: row.count });
+            cancerMap[row.cancer_type].total += row.count;
+        });
+        
+        const treemapData = Object.values(cancerMap)
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 15)
+            .map(c => ({ name: c.name, children: c.children, size: c.total }));
+        
+        res.json(treemapData);
+    } catch (err) {
+        console.error("Treemap Error:", err);
+        res.status(500).json({ error: "Erreur lors de la génération du treemap" });
+    }
+});
+
+// 4. Mortality/Incidence Ratio
+app.get('/api/stats/mi-ratio', authenticateToken, async (req, res) => {
+    try {
+        const { whereString, params } = getStatsFilters(req);
+        const result = await db.query(`
+            SELECT cancer_type as label, 
+                   COUNT(*)::int as total_cases,
+                   SUM(CASE WHEN status = 'Décédé' THEN 1 ELSE 0 END)::int as deaths,
+                   ROUND(
+                       CASE WHEN COUNT(*) > 0 
+                       THEN (SUM(CASE WHEN status = 'Décédé' THEN 1 ELSE 0 END)::float / COUNT(*)::float) * 100
+                       ELSE 0 END, 1
+                   )::float as mi_ratio
+            FROM patients 
+            ${whereString} ${whereString ? 'AND' : 'WHERE'} cancer_type IS NOT NULL
+            GROUP BY cancer_type
+            HAVING COUNT(*) >= 2
+            ORDER BY mi_ratio DESC
+            LIMIT 10
+        `, params);
+        res.json(result.rows);
+    } catch (err) {
+        console.error("M/I Ratio Error:", err);
+        res.status(500).json({ error: "Erreur lors du calcul du ratio M/I" });
+    }
+});
+
+// 5. Summary KPIs extended (prevalence, cumulative risk, median age)
+app.get('/api/stats/advanced-kpis', authenticateToken, async (req, res) => {
+    try {
+        const { whereString, params } = getStatsFilters(req);
+        const [medianRes, activeRes, newThisMonthRes, genderMRes, genderFRes] = await Promise.all([
+            db.query(`SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY age) as median_age FROM patients ${whereString} ${whereString ? 'AND' : 'WHERE'} age IS NOT NULL`, params),
+            db.query(`SELECT COUNT(*)::int as count FROM patients ${whereString} ${whereString ? 'AND' : 'WHERE'} (status != 'Décédé' OR status IS NULL)`, params),
+            db.query(`SELECT COUNT(*)::int as count FROM patients ${whereString} ${whereString ? 'AND' : 'WHERE'} created_at >= NOW() - INTERVAL '1 month'`, params),
+            db.query(`SELECT COUNT(*)::int as count FROM patients ${whereString} ${whereString ? 'AND' : 'WHERE'} gender IN ('Homme', 'Male')`, params),
+            db.query(`SELECT COUNT(*)::int as count FROM patients ${whereString} ${whereString ? 'AND' : 'WHERE'} gender IN ('Femme', 'Female')`, params)
+        ]);
+
+        res.json({
+            medianAge: Math.round(medianRes.rows[0]?.median_age || 0),
+            prevalence: activeRes.rows[0]?.count || 0,
+            newThisMonth: newThisMonthRes.rows[0]?.count || 0,
+            maleCount: genderMRes.rows[0]?.count || 0,
+            femaleCount: genderFRes.rows[0]?.count || 0,
+            sexRatio: genderFRes.rows[0]?.count > 0 
+                ? (genderMRes.rows[0]?.count / genderFRes.rows[0]?.count).toFixed(2) 
+                : 'N/A'
+        });
+    } catch (err) {
+        console.error("Advanced KPIs Error:", err);
+        res.status(500).json({ error: "Erreur lors du calcul des KPIs avancés" });
     }
 });
 
@@ -2842,6 +3288,91 @@ app.delete('/api/risk-zones/:id', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error("Error deleting risk zone", err);
         res.status(500).json({ error: "Erreur lors de la suppression de la zone à risque" });
+    }
+});
+
+// --- CANCER DIAGNOSIS & BODY MAP ROUTES ---
+app.get('/api/reference/topography', authenticateToken, async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM ref_topography_map ORDER BY topography_code');
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error fetching topography reference", err);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+
+app.get('/api/patients/:id/diagnosis', authenticateToken, async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT d.*, u.name as doctor_name 
+            FROM cancer_diagnoses d
+            LEFT JOIN users u ON d.diagnosed_by = u.id
+            WHERE d.patient_id = $1
+            ORDER BY d.diagnosis_date DESC, d.created_at DESC
+        `, [req.params.id]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error fetching patient diagnoses", err);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+
+app.post('/api/patients/:id/diagnosis', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { 
+        topography_code, morphology_code, tnm_t, tnm_n, tnm_m, stade_global, 
+        grade, lateralite, body_region, organ, organ_zone, notes, lab_request_id 
+    } = req.body;
+    
+    try {
+        const result = await db.query(`
+            INSERT INTO cancer_diagnoses (
+                patient_id, topography_code, morphology_code, tnm_t, tnm_n, tnm_m, stade_global,
+                grade, lateralite, body_region, organ, organ_zone, notes, lab_request_id, diagnosed_by
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            RETURNING *
+        `, [
+            id, topography_code, morphology_code, tnm_t, tnm_n, tnm_m, stade_global,
+            grade, lateralite, body_region, organ, organ_zone, notes, lab_request_id || null, req.user.id
+        ]);
+        
+        await logAudit(req.user.id, req.user.name, req.user.role, 'CREATE', 'cancer_diagnosis', result.rows[0].id, { patient_id: id });
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error("Error creating patient diagnosis", err);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+
+app.put('/api/patients/:id/diagnosis/:diagId', authenticateToken, async (req, res) => {
+    const { id, diagId } = req.params;
+    const { 
+        topography_code, morphology_code, tnm_t, tnm_n, tnm_m, stade_global, 
+        grade, lateralite, body_region, organ, organ_zone, notes, lab_request_id 
+    } = req.body;
+    
+    try {
+        const result = await db.query(`
+            UPDATE cancer_diagnoses SET
+                topography_code = $1, morphology_code = $2, tnm_t = $3, tnm_n = $4, tnm_m = $5, stade_global = $6,
+                grade = $7, lateralite = $8, body_region = $9, organ = $10, organ_zone = $11, notes = $12, lab_request_id = $13,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $14 AND patient_id = $15
+            RETURNING *
+        `, [
+            topography_code, morphology_code, tnm_t, tnm_n, tnm_m, stade_global,
+            grade, lateralite, body_region, organ, organ_zone, notes, lab_request_id || null,
+            diagId, id
+        ]);
+        
+        if (result.rowCount === 0) return res.status(404).json({ error: "Diagnostic non trouvé" });
+        
+        await logAudit(req.user.id, req.user.name, req.user.role, 'UPDATE', 'cancer_diagnosis', diagId, { patient_id: id });
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("Error updating patient diagnosis", err);
+        res.status(500).json({ error: "Erreur serveur" });
     }
 });
 

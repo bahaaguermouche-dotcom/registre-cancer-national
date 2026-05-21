@@ -13,6 +13,7 @@ import LaboratoryDashboard from './pages/LaboratoryDashboard';
 import LabRequestDetailPage from './pages/LabRequestDetailPage';
 import CancerReferencePage from './pages/CancerReferencePage';
 import AuditPage from './pages/AuditPage';
+import DuplicateManagement from './pages/DuplicateManagement';
 import { Toaster } from 'react-hot-toast';
 import CommandPalette from './components/CommandPalette';
 import './App.css';
@@ -104,6 +105,11 @@ const App: React.FC = () => {
                                         <Route path="/audit" element={
                                             (user?.role?.includes('Administrateur National') || user?.role?.includes('Directeur'))
                                                 ? <AuditPage /> : <Navigate to="/" />
+                                        } />
+
+                                        <Route path="/duplicates" element={
+                                            (user?.role?.includes('Administrateur National') || user?.role?.includes('Directeur'))
+                                                ? <DuplicateManagement /> : <Navigate to="/" />
                                         } />
 
                                         <Route path="/profile" element={<div className="p-8"><h1 className="text-2xl font-bold">Votre Profil</h1></div>} />

@@ -408,21 +408,36 @@
 }
 
 .analytics-viz-grid {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
 }
 
 .analytics-viz-btn {
-    flex: 1;
-    height: 44px;
-    border-radius: 12px;
+    height: 64px;
+    border-radius: 16px;
     border: 1px solid #e2e8f0;
     background-color: white;
     color: #64748b;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    gap: 6px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 8px;
+    cursor: pointer;
+}
+
+.analytics-viz-btn span {
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .analytics-viz-btn:hover { border-color: #94a3b8; }

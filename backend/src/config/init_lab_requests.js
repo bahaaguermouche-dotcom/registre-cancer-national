@@ -13,7 +13,7 @@ async function runMigration() {
 
         await db.query(`
             CREATE TABLE IF NOT EXISTS lab_requests (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
                 doctor_id UUID REFERENCES users(id) ON DELETE CASCADE,
                 doctor_name TEXT NOT NULL,

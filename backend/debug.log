@@ -1629,3 +1629,363 @@ Executing Query:
             LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
          WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
 Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Decoded Token: {"id":"e3803946-2147-4790-855b-8619f7d9846f","email":"bahaaguermouche@gmail.com","role":"Directeur Hopital","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Directeur Hopital Tlemcen ","workplace_id":null,"workplace_type":"hospital","iat":1778608669,"exp":1778637469}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
+Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Decoded Token: {"id":"e3803946-2147-4790-855b-8619f7d9846f","email":"bahaaguermouche@gmail.com","role":"Directeur Hopital","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Directeur Hopital Tlemcen ","workplace_id":null,"workplace_type":"hospital","iat":1778608669,"exp":1778637469}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
+Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Decoded Token: {"id":"e3803946-2147-4790-855b-8619f7d9846f","email":"bahaaguermouche@gmail.com","role":"Directeur Hopital","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Directeur Hopital Tlemcen ","workplace_id":null,"workplace_type":"hospital","iat":1778608669,"exp":1778637469}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
+Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Decoded Token: {"id":"e3803946-2147-4790-855b-8619f7d9846f","email":"bahaaguermouche@gmail.com","role":"Directeur Hopital","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Directeur Hopital Tlemcen ","workplace_id":null,"workplace_type":"hospital","iat":1778608669,"exp":1778637469}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
+Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Decoded Token: {"id":"e3803946-2147-4790-855b-8619f7d9846f","email":"bahaaguermouche@gmail.com","role":"Directeur Hopital","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Directeur Hopital Tlemcen ","workplace_id":null,"workplace_type":"hospital","iat":1778608669,"exp":1778637469}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
+Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Decoded Token: {"id":"e3803946-2147-4790-855b-8619f7d9846f","email":"bahaaguermouche@gmail.com","role":"Directeur Hopital","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Directeur Hopital Tlemcen ","workplace_id":null,"workplace_type":"hospital","iat":1778608669,"exp":1778637469}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
+Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Decoded Token: {"id":"e3803946-2147-4790-855b-8619f7d9846f","email":"bahaaguermouche@gmail.com","role":"Directeur Hopital","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Directeur Hopital Tlemcen ","workplace_id":null,"workplace_type":"hospital","iat":1778608669,"exp":1778637469}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
+Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Decoded Token: {"id":"e3803946-2147-4790-855b-8619f7d9846f","email":"bahaaguermouche@gmail.com","role":"Directeur Hopital","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Directeur Hopital Tlemcen ","workplace_id":null,"workplace_type":"hospital","iat":1778608669,"exp":1778637469}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
+Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImUzODAzOTQ2LTIxNDctNDc5MC04NTViLTg2MTlmN2Q5ODQ2ZiIsImVtYWlsIjoiYmFoYWFndWVybW91Y2hlQGdtYWlsLmNvbSIsInJvbGUiOiJEaXJlY3RldXIgSG9waXRhbCIsImxvY2F0aW9uIjoiMTMgVGxlbWNlbiAtICBUbGVtY2VuXzEzX0jDtHBpdGFsIiwibmFtZSI6IkRpcmVjdGV1ciBIb3BpdGFsIFRsZW1jZW4gIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Imhvc3BpdGFsIiwiaWF0IjoxNzc4NjA4NjY5LCJleHAiOjE3Nzg2Mzc0Njl9.pLFmHCyNps1EyNjg5B1R59x-iPfhNBltPFAIfwaZcWU]
+Decoded Token: {"id":"e3803946-2147-4790-855b-8619f7d9846f","email":"bahaaguermouche@gmail.com","role":"Directeur Hopital","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Directeur Hopital Tlemcen ","workplace_id":null,"workplace_type":"hospital","iat":1778608669,"exp":1778637469}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)
+Values: ["%13 Tlemcen -  Tlemcen_13_Hôpital%","e3803946-2147-4790-855b-8619f7d9846f"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ2NWY0MWY0LTU5ZDktNDVhNC1hMmJmLWQ4MjczODVlMWNiYiIsImVtYWlsIjoiYWRtaW5Ac2FudGUuZHoiLCJyb2xlIjoiQWRtaW5pc3RyYXRldXIgTmF0aW9uYWwiLCJsb2NhdGlvbiI6IkFsZ2VyIChTacOoZ2UgTmF0aW9uYWwpIiwibmFtZSI6IkFkbWluaXN0cmF0ZXVyIE5hdGlvbmFsIiwid29ya3BsYWNlX2lkIjpudWxsLCJ3b3JrcGxhY2VfdHlwZSI6Im5hdGlvbmFsIiwiaWF0IjoxNzc4NjE0MzE5LCJleHAiOjE3Nzg2NDMxMTl9.E5wRZKkGKdx8ODaNsWd_yvbHEtyDUbsy3bnt1B392X0]
+Decoded Token: {"id":"d65f41f4-59d9-45a4-a2bf-d827385e1cbb","email":"admin@sante.dz","role":"Administrateur National","location":"Alger (Siège National)","name":"Administrateur National","workplace_id":null,"workplace_type":"national","iat":1778614319,"exp":1778643119}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+        
+Values: []
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Decoded Token: {"id":"01be69e8-0f52-4648-bd59-9ae80233c0c7","email":"pes103019football@gmail.com","role":"Médecin","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Médecin&&&&&","workplace_id":null,"workplace_type":"hospital","iat":1778618020,"exp":1778646820}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))
+Values: ["01be69e8-0f52-4648-bd59-9ae80233c0c7","%13 Tlemcen -  Tlemcen_13_Hôpital%"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Decoded Token: {"id":"01be69e8-0f52-4648-bd59-9ae80233c0c7","email":"pes103019football@gmail.com","role":"Médecin","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Médecin&&&&&","workplace_id":null,"workplace_type":"hospital","iat":1778618020,"exp":1778646820}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))
+Values: ["01be69e8-0f52-4648-bd59-9ae80233c0c7","%13 Tlemcen -  Tlemcen_13_Hôpital%"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Decoded Token: {"id":"01be69e8-0f52-4648-bd59-9ae80233c0c7","email":"pes103019football@gmail.com","role":"Médecin","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Médecin&&&&&","workplace_id":null,"workplace_type":"hospital","iat":1778618020,"exp":1778646820}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))
+Values: ["01be69e8-0f52-4648-bd59-9ae80233c0c7","%13 Tlemcen -  Tlemcen_13_Hôpital%"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Decoded Token: {"id":"01be69e8-0f52-4648-bd59-9ae80233c0c7","email":"pes103019football@gmail.com","role":"Médecin","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Médecin&&&&&","workplace_id":null,"workplace_type":"hospital","iat":1778618020,"exp":1778646820}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))
+Values: ["01be69e8-0f52-4648-bd59-9ae80233c0c7","%13 Tlemcen -  Tlemcen_13_Hôpital%"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Decoded Token: {"id":"01be69e8-0f52-4648-bd59-9ae80233c0c7","email":"pes103019football@gmail.com","role":"Médecin","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Médecin&&&&&","workplace_id":null,"workplace_type":"hospital","iat":1778618020,"exp":1778646820}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))
+Values: ["01be69e8-0f52-4648-bd59-9ae80233c0c7","%13 Tlemcen -  Tlemcen_13_Hôpital%"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Decoded Token: {"id":"01be69e8-0f52-4648-bd59-9ae80233c0c7","email":"pes103019football@gmail.com","role":"Médecin","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Médecin&&&&&","workplace_id":null,"workplace_type":"hospital","iat":1778618020,"exp":1778646820}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))
+Values: ["01be69e8-0f52-4648-bd59-9ae80233c0c7","%13 Tlemcen -  Tlemcen_13_Hôpital%"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Decoded Token: {"id":"01be69e8-0f52-4648-bd59-9ae80233c0c7","email":"pes103019football@gmail.com","role":"Médecin","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Médecin&&&&&","workplace_id":null,"workplace_type":"hospital","iat":1778618020,"exp":1778646820}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))
+Values: ["01be69e8-0f52-4648-bd59-9ae80233c0c7","%13 Tlemcen -  Tlemcen_13_Hôpital%"]
+Raw Auth Header: [Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Extracted Token: [eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxYmU2OWU4LTBmNTItNDY0OC1iZDU5LTlhZTgwMjMzYzBjNyIsImVtYWlsIjoicGVzMTAzMDE5Zm9vdGJhbGxAZ21haWwuY29tIiwicm9sZSI6Ik3DqWRlY2luIiwibG9jYXRpb24iOiIxMyBUbGVtY2VuIC0gIFRsZW1jZW5fMTNfSMO0cGl0YWwiLCJuYW1lIjoiTcOpZGVjaW4mJiYmJiIsIndvcmtwbGFjZV9pZCI6bnVsbCwid29ya3BsYWNlX3R5cGUiOiJob3NwaXRhbCIsImlhdCI6MTc3ODYxODAyMCwiZXhwIjoxNzc4NjQ2ODIwfQ.euqWt9T7VyybnfVqkT49Y5ISnuToHxaq9Ib6zNlrRgs]
+Decoded Token: {"id":"01be69e8-0f52-4648-bd59-9ae80233c0c7","email":"pes103019football@gmail.com","role":"Médecin","location":"13 Tlemcen -  Tlemcen_13_Hôpital","name":"Médecin&&&&&","workplace_id":null,"workplace_type":"hospital","iat":1778618020,"exp":1778646820}
+Executing Query: 
+            SELECT DISTINCT p.*, u.name as doctor_name 
+            FROM patients p 
+            LEFT JOIN users u ON p.assigned_doctor_id = u.id
+            LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+         WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))
+Values: ["01be69e8-0f52-4648-bd59-9ae80233c0c7","%13 Tlemcen -  Tlemcen_13_Hôpital%"]

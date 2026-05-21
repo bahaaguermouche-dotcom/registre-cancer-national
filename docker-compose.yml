@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: registry_db_container
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: BAHA2005
+      POSTGRES_DB: registry_db
+    ports:
+      - "5433:5432" # Keep 5433 host mapping to prevent local pgAdmin port conflicts
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d registry_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: registry-backend:latest
+    container_name: registry_backend
+    restart: always
+    ports:
+      - "5001:5000"
+    environment:
+      - PORT=5000
+      - DATABASE_URL=postgresql://postgres:BAHA2005@db:5432/registry_db
+      - JWT_SECRET=super_secret_key_123
+      - NODE_ENV=production
+      - DB_SSL=false
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:5001
+    image: registry-frontend:latest
+    container_name: registry_frontend
+    restart: always
+    ports:
+      - "80:80" # Standard HTTP web port
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

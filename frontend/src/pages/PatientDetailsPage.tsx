@@ -11,6 +11,9 @@ import {
 import axios from 'axios';
 import api from '../services/api';
 import LabResultForm from '../components/LabResultForm';
+import BodyMapViewer from '../components/BodyMap/BodyMapViewer';
+import CancerDiagnosisForm from '../components/BodyMap/CancerDiagnosisForm';
+import OrganDetailView from '../components/BodyMap/OrganDetailView';
 import { RESULT_TEMPLATES } from '../constants/resultTemplates';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -180,6 +183,10 @@ const PatientDetailsPage: React.FC = () => {
 
     const [patient, setPatient] = useState<Patient | null>(null);
     const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
+    const [cancerDiagnoses, setCancerDiagnoses] = useState<any[]>([]);
+    const [showCancerDiagnosisForm, setShowCancerDiagnosisForm] = useState(false);
+    const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
+    const [selectedRegionDiagnoses, setSelectedRegionDiagnoses] = useState<any[]>([]);
     const [records, setRecords] = useState<MedicalRecord[]>([]);
     const [tumors, setTumors] = useState<Tumor[]>([]);
     const [subtypes, setSubtypes] = useState<any[]>([]);
@@ -391,6 +398,11 @@ const PatientDetailsPage: React.FC = () => {
                 const labEntriesRes = await api.get(`/api/patients/${id}/lab-entries`);
                 setLabEntries(labEntriesRes.data);
             } catch (err) { console.error("Error fetching lab entries", err); }
+
+            try {
+                const diagRes = await api.get(`/api/patients/${id}/diagnosis`);
+                setCancerDiagnoses(diagRes.data);
+            } catch (err) { console.error("Error fetching cancer diagnoses", err); }
 
             try {
                 const linksRes = await api.get(`/api/patients/${id}/hospital-links`);
@@ -1531,6 +1543,7 @@ const PatientDetailsPage: React.FC = () => {
                         }}>
                             {[
                                 { id: 'info', label: 'Informations', icon: <User size={18} /> },
+                                { id: 'body_map', label: 'Body Map', icon: <ImageIcon size={18} />, hidden: currentUser?.role === 'Secrétaire' },
                                 { id: 'tumors', label: 'Données Cliniques', icon: <Activity size={18} />, hidden: currentUser?.role === 'Secrétaire' },
                                 { id: 'diagnostics', label: 'Diagnostics', icon: <FileText size={18} />, hidden: currentUser?.role === 'Secrétaire' },
                                 { id: 'lab_requests', label: 'Bilans & Examens', icon: <Activity size={18} />, hidden: currentUser?.role === 'Secrétaire' },
@@ -1556,6 +1569,61 @@ const PatientDetailsPage: React.FC = () => {
                                 </button>
                             ))}
                         </div>
+
+                        {activeTab === 'body_map' && (
+                            <div className="animate-fadeIn">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>Cartographie Corporelle (Body Map)</h3>
+                                    {isOwner && (
+                                        <button className="login-button" onClick={() => setShowCancerDiagnosisForm(true)} style={{ width: 'auto', padding: '10px 20px', gap: '8px' }}>
+                                            <Plus size={18} /> Nouveau Diagnostic
+                                        </button>
+                                    )}
+                                </div>
+                                <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start' }}>
+                                    <div style={{ flex: 1, backgroundColor: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'center' }}>
+                                        <BodyMapViewer 
+                                            diagnoses={cancerDiagnoses} 
+                                            onRegionClick={(regionId, diagnoses) => {
+                                                setSelectedRegionId(regionId);
+                                                setSelectedRegionDiagnoses(diagnoses);
+                                            }} 
+                                        />
+                                    </div>
+                                    <div style={{ width: '400px', backgroundColor: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
+                                        <h4 style={{ margin: '0 0 16px', color: '#1e293b' }}>Historique des Diagnostics</h4>
+                                        {cancerDiagnoses.length === 0 ? (
+                                            <p style={{ color: '#64748b', fontSize: '14px' }}>Aucun diagnostic enregistré.</p>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                {cancerDiagnoses.map((d: any) => (
+                                                    <div key={d.id} style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                                                        <div style={{ fontWeight: 'bold', color: '#0f172a' }}>{d.topography_code} - {d.organ}</div>
+                                                        <div style={{ fontSize: '13px', color: '#64748b', margin: '4px 0' }}>Stade: {d.stade_global} | Grade: {d.grade}</div>
+                                                        <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>{new Date(d.diagnosis_date).toLocaleDateString()}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                {showCancerDiagnosisForm && (
+                                    <CancerDiagnosisForm 
+                                        patientId={id!} 
+                                        initialData={tumors && tumors.length > 0 ? tumors[0] : undefined}
+                                        onClose={() => setShowCancerDiagnosisForm(false)} 
+                                        onSaved={fetchData} 
+                                    />
+                                )}
+                                {selectedRegionId && (
+                                    <OrganDetailView 
+                                        regionId={selectedRegionId} 
+                                        diagnoses={selectedRegionDiagnoses} 
+                                        onClose={() => setSelectedRegionId(null)} 
+                                    />
+                                )}
+                            </div>
+                        )}
 
                         {activeTab === 'tumors' && (
                             <div className="animate-fadeIn">

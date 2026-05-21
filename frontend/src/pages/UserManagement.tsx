@@ -141,10 +141,9 @@ const UserManagement: React.FC = () => {
                     <button
                         onClick={() => setIsInviteModalOpen(true)}
                         className="btn-register"
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: 0 }}
                     >
-                        <UserPlus size={20} />
-                        Envoyer Invitation
+                        <UserPlus size={18} />
+                        <span>Envoyer Invitation</span>
                     </button>
                 )}
             </div>

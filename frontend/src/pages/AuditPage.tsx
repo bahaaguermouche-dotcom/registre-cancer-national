@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Shield, Eye, LogIn, Activity, Settings, User, Clock, AlertCircle } from 'lucide-react';
+import { Shield, Eye, LogIn, Activity, Settings, User, Clock, AlertCircle, ArrowRightLeft } from 'lucide-react';
 
 interface AuditLog {
     id: number;
@@ -38,6 +38,7 @@ const AuditPage: React.FC = () => {
         if (action.includes('VIEW')) return <Eye size={16} className="text-gray-500" style={{ color: '#6b7280' }} />;
         if (action.includes('UPDATE')) return <Settings size={16} className="text-orange-500" style={{ color: '#f97316' }} />;
         if (action.includes('CREATE')) return <Activity size={16} className="text-green-500" style={{ color: '#10b981' }} />;
+        if (action.includes('MERGE')) return <ArrowRightLeft size={16} className="text-purple-500" style={{ color: '#a855f7' }} />;
         return <AlertCircle size={16} style={{ color: '#ef4444' }} />;
     };
 

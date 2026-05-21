@@ -314,18 +314,10 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
                         type="submit"
                         disabled={loading || status === 'success'}
                         className="login-button"
-                        style={{
-                            width: '100%',
-                            marginTop: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px',
-                            opacity: (loading || status === 'success') ? 0.7 : 1
-                        }}
+                        style={{ marginTop: '10px', opacity: (loading || status === 'success') ? 0.7 : 1 }}
                     >
                         {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-                        {loading ? 'Envoi en cours...' : status === 'success' ? 'Envoyé !' : 'Envoyer l\'invitation'}
+                        <span>{loading ? 'Envoi en cours...' : status === 'success' ? 'Envoyé !' : 'Envoyer l\'invitation'}</span>
                     </button>
                 </form>
             </div>
