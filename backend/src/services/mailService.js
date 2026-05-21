@@ -1,30 +1,45 @@
 const https = require('https');
 
 /**
- * Send an email via the Brevo (Sendinblue) Transactional Email HTTP API.
+ * Send an email via the Mailjet Send API v3.1.
  * Uses HTTPS port 443 — never blocked by Render free tier.
- * Docs: https://developers.brevo.com/reference/sendtransacemail
+ * Docs: https://dev.mailjet.com/email/guides/send-api-v31/
  */
-const sendViaBrevo = (options) => {
+const sendViaMailjet = (options) => {
   return new Promise((resolve, reject) => {
-    const apiKey = process.env.BREVO_API_KEY;
-    if (!apiKey) {
-      return reject(new Error('BREVO_API_KEY environment variable is not set.'));
+    const apiKey = process.env.MAILJET_API_KEY;
+    const apiSecret = process.env.MAILJET_SECRET_KEY;
+    
+    if (!apiKey || !apiSecret) {
+      return reject(new Error('MAILJET_API_KEY or MAILJET_SECRET_KEY environment variable is not set.'));
     }
 
     const payload = JSON.stringify({
-      sender: { name: options.senderName, email: options.senderEmail },
-      to: [{ email: options.to }],
-      subject: options.subject,
-      htmlContent: options.html,
+      Messages: [
+        {
+          From: {
+            Email: options.senderEmail,
+            Name: options.senderName,
+          },
+          To: [
+            {
+              Email: options.to,
+            }
+          ],
+          Subject: options.subject,
+          HTMLPart: options.html,
+        }
+      ]
     });
 
+    const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
+
     const reqOptions = {
-      hostname: 'api.brevo.com',
-      path: '/v3/smtp/email',
+      hostname: 'api.mailjet.com',
+      path: '/v3.1/send',
       method: 'POST',
       headers: {
-        'api-key': apiKey,
+        'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(payload),
       },
@@ -39,17 +54,17 @@ const sendViaBrevo = (options) => {
           if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve(parsed);
           } else {
-            reject(new Error(`Brevo API error ${res.statusCode}: ${JSON.stringify(parsed)}`));
+            reject(new Error(`Mailjet API error ${res.statusCode}: ${JSON.stringify(parsed)}`));
           }
         } catch (e) {
-          reject(new Error(`Brevo response parse error: ${data}`));
+          reject(new Error(`Mailjet response parse error: ${data}`));
         }
       });
     });
 
     req.on('error', reject);
     req.setTimeout(15000, () => {
-      req.destroy(new Error('Brevo API request timed out after 15s'));
+      req.destroy(new Error('Mailjet API request timed out after 15s'));
     });
 
     req.write(payload);
@@ -77,7 +92,7 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
   const senderEmail = process.env.MAIL_FROM || process.env.MAIL_USER || 'no-reply@example.com';
 
   try {
-    const result = await sendViaBrevo({
+    const result = await sendViaMailjet({
       senderName: 'Registre Cancer National',
       senderEmail,
       to: email,
@@ -101,8 +116,9 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
       `,
     });
 
-    console.log(`[Email] Invitation sent to ${email}. Brevo messageId: ${result.messageId}`);
-    return { success: true, sent: true, messageId: result.messageId, registrationLink };
+    const messageId = result?.Messages?.[0]?.To?.[0]?.MessageID || 'N/A';
+    console.log(`[Email] Invitation sent to ${email}. Mailjet MessageID: ${messageId}`);
+    return { success: true, sent: true, messageId, registrationLink };
   } catch (error) {
     console.error('[Email] Invitation send failed, returning fallback link. Error:', error.message);
     return { success: true, sent: false, error: error.message, registrationLink };
@@ -116,7 +132,7 @@ const sendLabResultNotification = async (doctorEmail, doctorName, patientName, r
   const senderEmail = process.env.MAIL_FROM || process.env.MAIL_USER || 'no-reply@example.com';
 
   try {
-    const result = await sendViaBrevo({
+    const result = await sendViaMailjet({
       senderName: "Laboratoire d'Analyses",
       senderEmail,
       to: doctorEmail,
@@ -143,8 +159,9 @@ const sendLabResultNotification = async (doctorEmail, doctorName, patientName, r
       `,
     });
 
-    console.log(`[Email] Lab notification sent to ${doctorEmail}. Brevo messageId: ${result.messageId}`);
-    return { success: true, messageId: result.messageId };
+    const messageId = result?.Messages?.[0]?.To?.[0]?.MessageID || 'N/A';
+    console.log(`[Email] Lab notification sent to ${doctorEmail}. Mailjet MessageID: ${messageId}`);
+    return { success: true, messageId };
   } catch (error) {
     console.error('[Email] Lab notification send failed. Error:', error.message);
     return { success: false, error: error.message };
