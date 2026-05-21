@@ -1,36 +1,69 @@
-const nodemailer = require('nodemailer');
-const dns = require('dns').promises;
+const https = require('https');
 
-// Shared helper to resolve hostnames to IPv4 and create a secure SMTP transporter
-const getSecureSmtpTransporter = async (host, port) => {
-  let resolvedHost = host;
-  if (host && !host.match(/^[0-9.]+$/) && host !== 'localhost') {
-    try {
-      const addresses = await dns.resolve4(host);
-      if (addresses && addresses.length > 0) {
-        resolvedHost = addresses[0];
-        console.log(`[SMTP] Host ${host} resolved to IPv4: ${resolvedHost}`);
-      }
-    } catch (e) {
-      console.warn(`[SMTP] Could not resolve ${host} to IPv4, keeping original. Error:`, e.message);
+/**
+ * Send an email via the Resend HTTP API (uses HTTPS port 443 — never blocked by Render).
+ * Docs: https://resend.com/docs/api-reference/emails/send-email
+ *
+ * @param {object} options
+ * @param {string} options.from   - Sender address (must be verified on Resend)
+ * @param {string} options.to     - Recipient address
+ * @param {string} options.subject
+ * @param {string} options.html
+ * @returns {Promise<object>}     - { id } on success, throws on failure
+ */
+const sendViaResend = (options) => {
+  return new Promise((resolve, reject) => {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      return reject(new Error('RESEND_API_KEY environment variable is not set.'));
     }
-  }
 
-  return nodemailer.createTransport({
-    host: resolvedHost,
-    port: port,
-    secure: port === 465, // STARTTLS (port 587) - SSL (port 465)
-    auth: {
-      user: process.env.MAIL_USER || 'placeholder@ethereal.email',
-      pass: process.env.MAIL_PASS || 'placeholder_pass',
-    },
-    tls: {
-      // Do not fail on invalid certs (common for internal SMTP)
-      rejectUnauthorized: false,
-      servername: host // Crucial for TLS handshake to match certificate when connecting via IP
-    }
+    const payload = JSON.stringify({
+      from: options.from,
+      to: [options.to],
+      subject: options.subject,
+      html: options.html,
+    });
+
+    const reqOptions = {
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload),
+      },
+    };
+
+    const req = https.request(reqOptions, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(parsed);
+          } else {
+            reject(new Error(`Resend API error ${res.statusCode}: ${JSON.stringify(parsed)}`));
+          }
+        } catch (e) {
+          reject(new Error(`Resend response parse error: ${data}`));
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.setTimeout(15000, () => {
+      req.destroy(new Error('Resend API request timed out after 15s'));
+    });
+
+    req.write(payload);
+    req.end();
   });
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const sendInvitationEmail = async (email, role, location, labType, workplaceId, workplaceType) => {
   const FRONTEND_URL = process.env.FRONTEND_URL || 'https://bahabaha2405-5d861.web.app';
@@ -47,13 +80,14 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
     registrationLink += `&workplaceType=${encodeURIComponent(workplaceType)}`;
   }
 
-  const port = parseInt(process.env.MAIL_PORT || '587');
-  const host = process.env.MAIL_HOST || 'smtp.ethereal.email';
-  
+  // "from" address: use MAIL_FROM env var. Must be verified on Resend.
+  // For testing without a verified domain, use: onboarding@resend.dev
+  // (only delivers to your own Resend-verified email address)
+  const fromAddress = process.env.MAIL_FROM || 'onboarding@resend.dev';
+
   try {
-    const transporter = await getSecureSmtpTransporter(host, port);
-    const mailOptions = {
-      from: `"Registre Cancer National" <${process.env.MAIL_FROM || 'no-reply@sante.dz'}>`,
+    const result = await sendViaResend({
+      from: `"Registre Cancer National" <${fromAddress}>`,
       to: email,
       subject: `Invitation : Inscription au Registre National du Cancer (${role})`,
       html: `
@@ -73,27 +107,25 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
           <p style="font-size: 11px; color: #94a3b8; text-align: center;">Ministère de la Santé - Algérie</p>
         </div>
       `,
-    };
+    });
 
-    const info = await transporter.sendMail(mailOptions);
-    return { success: true, sent: true, messageId: info.messageId, registrationLink };
+    console.log(`[Email] Invitation sent successfully to ${email}. Resend ID: ${result.id}`);
+    return { success: true, sent: true, messageId: result.id, registrationLink };
   } catch (error) {
-    console.error("SMTP Mail Send Failed, using fallback registration link. Error:", error);
+    console.error('[Email] Invitation send failed, returning fallback link. Error:', error.message);
     return { success: true, sent: false, error: error.message, registrationLink };
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
 
 const sendLabResultNotification = async (doctorEmail, doctorName, patientName, requestId) => {
   const portalLink = process.env.FRONTEND_URL || 'https://bahabaha2405-5d861.web.app';
-
-  const port = parseInt(process.env.MAIL_PORT || '587');
-  const host = process.env.MAIL_HOST || 'smtp.ethereal.email';
+  const fromAddress = process.env.MAIL_FROM || 'onboarding@resend.dev';
 
   try {
-    const transporter = await getSecureSmtpTransporter(host, port);
-    const mailOptions = {
-      from: `"Laboratoire d'Analyses" <${process.env.MAIL_FROM || 'no-reply@sante.dz'}>`,
+    const result = await sendViaResend({
+      from: `"Laboratoire d'Analyses" <${fromAddress}>`,
       to: doctorEmail,
       subject: `Résultats Disponibles : Bilan de ${patientName}`,
       html: `
@@ -105,7 +137,7 @@ const sendLabResultNotification = async (doctorEmail, doctorName, patientName, r
             <strong>Référence Demande :</strong> #${requestId}<br/>
             <strong>Date de Finalisation :</strong> ${new Date().toLocaleDateString('fr-FR')}
           </div>
-          <p>Vous pouvez consulter les résultats détaillés et les rapports structurés en clicking sur le lien ci-dessous :</p>
+          <p>Vous pouvez consulter les résultats détaillés en cliquant sur le lien ci-dessous :</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${portalLink}" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">
               Consulter les résultats
@@ -116,11 +148,12 @@ const sendLabResultNotification = async (doctorEmail, doctorName, patientName, r
           <p style="font-size: 11px; color: #94a3b8; text-align: center;">Ministère de la Santé - Registre National du Cancer</p>
         </div>
       `,
-    };
+    });
 
-    return await transporter.sendMail(mailOptions);
+    console.log(`[Email] Lab result notification sent to ${doctorEmail}. Resend ID: ${result.id}`);
+    return { success: true, messageId: result.id };
   } catch (error) {
-    console.error("SMTP Lab Notification Mail Send Failed. Error:", error);
+    console.error('[Email] Lab notification send failed. Error:', error.message);
     return { success: false, error: error.message };
   }
 };
