@@ -2,6 +2,13 @@
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 
+// Bypasses self-signed certificate issues for remote DBs (like Supabase) in production
+if (process.env.DATABASE_URL && 
+    !process.env.DATABASE_URL.includes('localhost') && 
+    !process.env.DATABASE_URL.includes('127.0.0.1')) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
