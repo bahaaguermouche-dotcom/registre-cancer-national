@@ -19,9 +19,9 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
   // Automatically detect if we should use SSL (port 465) or STARTTLS (other ports)
   const port = parseInt(process.env.MAIL_PORT || '587');
   const transporter = nodemailer.createTransport({
-    host: process.env.MAIL_HOST || 'smtp.gmail.com',
-    port: 587,
-    secure: false, // STARTTLS (port 587) - port 465 is blocked on Render free tier
+    host: process.env.MAIL_HOST || 'smtp.ethereal.email',
+    port: port,
+    secure: port === 465, // STARTTLS (port 587) - port 465 is blocked on Render free tier
     auth: {
       user: process.env.MAIL_USER || 'placeholder@ethereal.email',
       pass: process.env.MAIL_PASS || 'placeholder_pass',
@@ -56,7 +56,13 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
     `,
   };
 
-  return await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, sent: true, messageId: info.messageId, registrationLink };
+  } catch (error) {
+    console.error("SMTP Mail Send Failed, using fallback registration link. Error:", error);
+    return { success: true, sent: false, error: error.message, registrationLink };
+  }
 };
 
 

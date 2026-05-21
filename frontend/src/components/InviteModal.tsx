@@ -38,6 +38,8 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
 
     const availableRoles = getAvailableRoles();
     const [role, setRole] = useState(availableRoles[0]);
+    const [generatedLink, setGeneratedLink] = useState('');
+    const [copied, setCopied] = useState(false);
 
     const toggleLabType = (typeCode: string) => {
         setLabTypes(prev =>
@@ -61,6 +63,8 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
             }
             // Reset hospitalName when modal opens or user context changes
             setHospitalName('');
+            setGeneratedLink('');
+            setCopied(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
@@ -99,13 +103,21 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
             });
 
             if (response.data.success) {
-                setStatus('success');
-                setTimeout(() => {
-                    onClose();
-                    setEmail('');
-                    setLocation('');
-                    setStatus('idle');
-                }, 2000);
+                if (response.data.sent) {
+                    setStatus('success');
+                    setTimeout(() => {
+                        onClose();
+                        setEmail('');
+                        if (!isDirector && !isSecretary && !isLabManager) {
+                            setLocation('');
+                        }
+                        setStatus('idle');
+                    }, 2000);
+                } else {
+                    // Email not sent (SMTP fallback), show the generated link to the admin
+                    setGeneratedLink(response.data.registrationLink);
+                    setStatus('success');
+                }
             }
         } catch (error: any) {
             console.error("Invitation failed:", error);
@@ -170,156 +182,239 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose, currentUser 
                     </button>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Email Professionnel</label>
-                        <div style={{ position: 'relative' }}>
-                            <Mail style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
-                            <input
-                                type="email"
-                                required
-                                placeholder="exemple@sante.dz"
-                                style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '14px' }}
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
+                {/* Form or Link Copier */}
+                {status === 'success' && generatedLink ? (
+                    <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'center' }}>
+                        <div style={{
+                            backgroundColor: '#f0fdf4',
+                            border: '1px solid #bbf7d0',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            color: '#16a34a',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                        }}>
+                            Invitation créée ! Le serveur de messagerie n'étant pas configuré, veuillez transmettre ce lien manuellement au destinataire.
                         </div>
-                    </div>
 
-                    <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Rôle Attribué</label>
-                        <div style={{ position: 'relative' }}>
-                            <User style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
-                            <select
-                                style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '14px', appearance: 'none' }}
-                                value={role}
-                                onChange={(e) => setRole(e.target.value)}
-                            >
-                                {availableRoles.map(r => (
-                                    <option key={r} value={r}>{r}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Wilaya / Établissement</label>
-                        <div style={{ position: 'relative' }}>
-                            <MapPin style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
-                            {isDirector || isSecretary || isLabManager ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+                            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>Lien d'inscription</label>
+                            <div style={{ display: 'flex', gap: '8px' }}>
                                 <input
                                     type="text"
                                     readOnly
-                                    value={location}
+                                    value={generatedLink}
                                     style={{
-                                        width: '100%',
-                                        padding: '12px 12px 12px 40px',
+                                        flex: 1,
+                                        padding: '12px',
                                         borderRadius: '12px',
                                         border: '1px solid #e2e8f0',
-                                        outline: 'none',
-                                        fontSize: '14px',
+                                        fontSize: '13px',
                                         backgroundColor: '#f8fafc',
-                                        color: '#64748b'
+                                        color: '#334155',
+                                        outline: 'none'
                                     }}
+                                    onClick={(e) => (e.target as HTMLInputElement).select()}
                                 />
-                            ) : (
-                                <select
-                                    required
-                                    style={{
-                                        width: '100%',
-                                        padding: '12px 12px 12px 40px',
-                                        borderRadius: '12px',
-                                        border: '1px solid #e2e8f0',
-                                        outline: 'none',
-                                        fontSize: '14px',
-                                        appearance: 'none',
-                                        backgroundColor: 'white'
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(generatedLink);
+                                        setCopied(true);
+                                        setTimeout(() => setCopied(false), 2000);
                                     }}
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
+                                    style={{
+                                        padding: '12px 20px',
+                                        backgroundColor: copied ? '#10b981' : '#00AAFF',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '12px',
+                                        fontSize: '13px',
+                                        fontWeight: 'bold',
+                                        cursor: 'pointer',
+                                        transition: 'background-color 0.2s',
+                                        whiteSpace: 'nowrap'
+                                    }}
                                 >
-                                    {ALGERIAN_WILAYAS.map(w => (
-                                        <option key={w} value={w}>{w}</option>
+                                    {copied ? 'Copié !' : 'Copier'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onClose();
+                                setEmail('');
+                                setGeneratedLink('');
+                                setStatus('idle');
+                            }}
+                            style={{
+                                padding: '12px',
+                                backgroundColor: '#f1f5f9',
+                                color: '#475569',
+                                border: 'none',
+                                borderRadius: '12px',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                marginTop: '10px'
+                            }}
+                        >
+                            Fermer
+                        </button>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit} style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Email Professionnel</label>
+                            <div style={{ position: 'relative' }}>
+                                <Mail style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
+                                <input
+                                    type="email"
+                                    required
+                                    placeholder="exemple@sante.dz"
+                                    style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '14px' }}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Rôle Attribué</label>
+                            <div style={{ position: 'relative' }}>
+                                <User style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
+                                <select
+                                    style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '14px', appearance: 'none' }}
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
+                                >
+                                    {availableRoles.map(r => (
+                                        <option key={r} value={r}>{r}</option>
                                     ))}
                                 </select>
-                            )}
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Hospital/Lab Name Input for National Admin inviting Director or Lab */}
-                    {isNationalAdmin && (role === 'Directeur Hopital' || role === 'Laboratoire') && (
-                        <>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
-                                    {role === 'Laboratoire' ? "Nom du Laboratoire" : "Nom de l'Hôpital"}
-                                </label>
-                                <div style={{ position: 'relative' }}>
-                                    <User style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
+                        <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Wilaya / Établissement</label>
+                            <div style={{ position: 'relative' }}>
+                                <MapPin style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
+                                {isDirector || isSecretary || isLabManager ? (
                                     <input
                                         type="text"
-                                        placeholder={role === 'Laboratoire' ? "Laboratoire Central" : "Hôpital Régional"}
-                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '14px' }}
-                                        value={hospitalName}
-                                        onChange={(e) => setHospitalName(e.target.value)}
+                                        readOnly
+                                        value={location}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px 12px 12px 40px',
+                                            borderRadius: '12px',
+                                            border: '1px solid #e2e8f0',
+                                            outline: 'none',
+                                            fontSize: '14px',
+                                            backgroundColor: '#f8fafc',
+                                            color: '#64748b'
+                                        }}
                                     />
-                                </div>
+                                ) : (
+                                    <select
+                                        required
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px 12px 12px 40px',
+                                            borderRadius: '12px',
+                                            border: '1px solid #e2e8f0',
+                                            outline: 'none',
+                                            fontSize: '14px',
+                                            appearance: 'none',
+                                            backgroundColor: 'white'
+                                        }}
+                                        value={location}
+                                        onChange={(e) => setLocation(e.target.value)}
+                                    >
+                                        {ALGERIAN_WILAYAS.map(w => (
+                                            <option key={w} value={w}>{w}</option>
+                                        ))}
+                                    </select>
+                                )}
                             </div>
+                        </div>
 
-                            {role === 'Laboratoire' && (
+                        {/* Hospital/Lab Name Input for National Admin inviting Director or Lab */}
+                        {isNationalAdmin && (role === 'Directeur Hopital' || role === 'Laboratoire') && (
+                            <>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
-                                        Type(s) de Laboratoire
+                                        {role === 'Laboratoire' ? "Nom du Laboratoire" : "Nom de l'Hôpital"}
                                     </label>
-                                    <div style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '8px',
-                                        padding: '12px',
-                                        backgroundColor: '#f8fafc',
-                                        borderRadius: '12px',
-                                        border: '1px solid #e2e8f0'
-                                    }}>
-                                        {Object.values(LAB_TYPES).map(t => (
-                                            <label key={t.code} style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '10px',
-                                                fontSize: '13px',
-                                                color: '#475569',
-                                                cursor: 'pointer'
-                                            }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={labTypes.includes(t.code)}
-                                                    onChange={() => toggleLabType(t.code)}
-                                                    style={{ width: '16px', height: '16px', accentColor: '#00AAFF' }}
-                                                />
-                                                {t.label}
-                                            </label>
-                                        ))}
+                                    <div style={{ position: 'relative' }}>
+                                        <User style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
+                                        <input
+                                            type="text"
+                                            placeholder={role === 'Laboratoire' ? "Laboratoire Central" : "Hôpital Régional"}
+                                            style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '14px' }}
+                                            value={hospitalName}
+                                            onChange={(e) => setHospitalName(e.target.value)}
+                                        />
                                     </div>
                                 </div>
-                            )}
-                        </>
-                    )}
 
-                    {status === 'error' && (
-                        <p style={{ color: '#ef4444', fontSize: '12px', textAlign: 'center', margin: 0 }}>
-                            Échec de l'envoi. Veuillez réessayer.
-                        </p>
-                    )}
+                                {role === 'Laboratoire' && (
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
+                                            Type(s) de Laboratoire
+                                        </label>
+                                        <div style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '8px',
+                                            padding: '12px',
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: '12px',
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            {Object.values(LAB_TYPES).map(t => (
+                                                <label key={t.code} style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '10px',
+                                                    fontSize: '13px',
+                                                    color: '#475569',
+                                                    cursor: 'pointer'
+                                                }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={labTypes.includes(t.code)}
+                                                        onChange={() => toggleLabType(t.code)}
+                                                        style={{ width: '16px', height: '16px', accentColor: '#00AAFF' }}
+                                                    />
+                                                    {t.label}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
 
-                    <button
-                        type="submit"
-                        disabled={loading || status === 'success'}
-                        className="login-button"
-                        style={{ marginTop: '10px', opacity: (loading || status === 'success') ? 0.7 : 1 }}
-                    >
-                        {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-                        <span>{loading ? 'Envoi en cours...' : status === 'success' ? 'Envoyé !' : 'Envoyer l\'invitation'}</span>
-                    </button>
-                </form>
+                        {status === 'error' && (
+                            <p style={{ color: '#ef4444', fontSize: '12px', textAlign: 'center', margin: 0 }}>
+                                Échec de l'envoi. Veuillez réessayer.
+                            </p>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={loading || status === 'success'}
+                            className="login-button"
+                            style={{ marginTop: '10px', opacity: (loading || status === 'success') ? 0.7 : 1 }}
+                        >
+                            {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+                            <span>{loading ? 'Envoi en cours...' : status === 'success' ? 'Envoyé !' : 'Envoyer l\'invitation'}</span>
+                        </button>
+                    </form>
+                )}
             </div>
         </div>
     );

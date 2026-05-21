@@ -402,18 +402,17 @@ app.post('/api/invitations/send', async (req, res) => {
 
     try {
         const info = await sendInvitationEmail(email, role, location, labType, workplaceId, workplaceType);
-        console.log("Email sent: %s", info.messageId);
+        console.log("Email status:", info.sent ? `sent (${info.messageId})` : "simulated/failed");
 
-        // If using ethereal for testing, log the preview URL
-        if (info.envelope && info.envelope.from === 'no-reply@sante.dz' && !process.env.MAIL_HOST) {
-            // This is just a hint for the developer
-            console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-        }
-
-        res.json({ success: true, message: "Invitation envoyée avec succès !" });
+        res.json({ 
+            success: true, 
+            sent: info.sent,
+            registrationLink: info.registrationLink,
+            message: info.sent ? "Invitation envoyée avec succès !" : "Invitation générée avec succès (l'envoi de l'e-mail a échoué)."
+        });
     } catch (error) {
-        console.error("Mail Error:", error);
-        res.status(500).json({ error: "Erreur lors de l'envoi de l'email." });
+        console.error("Mail Route Error:", error);
+        res.status(500).json({ error: "Erreur lors de la génération de l'invitation." });
     }
 });
 
