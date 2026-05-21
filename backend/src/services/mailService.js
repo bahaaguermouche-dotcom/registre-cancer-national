@@ -1,36 +1,30 @@
 const https = require('https');
 
 /**
- * Send an email via the Resend HTTP API (uses HTTPS port 443 — never blocked by Render).
- * Docs: https://resend.com/docs/api-reference/emails/send-email
- *
- * @param {object} options
- * @param {string} options.from   - Sender address (must be verified on Resend)
- * @param {string} options.to     - Recipient address
- * @param {string} options.subject
- * @param {string} options.html
- * @returns {Promise<object>}     - { id } on success, throws on failure
+ * Send an email via the Brevo (Sendinblue) Transactional Email HTTP API.
+ * Uses HTTPS port 443 — never blocked by Render free tier.
+ * Docs: https://developers.brevo.com/reference/sendtransacemail
  */
-const sendViaResend = (options) => {
+const sendViaBrevo = (options) => {
   return new Promise((resolve, reject) => {
-    const apiKey = process.env.RESEND_API_KEY;
+    const apiKey = process.env.BREVO_API_KEY;
     if (!apiKey) {
-      return reject(new Error('RESEND_API_KEY environment variable is not set.'));
+      return reject(new Error('BREVO_API_KEY environment variable is not set.'));
     }
 
     const payload = JSON.stringify({
-      from: options.from,
-      to: [options.to],
+      sender: { name: options.senderName, email: options.senderEmail },
+      to: [{ email: options.to }],
       subject: options.subject,
-      html: options.html,
+      htmlContent: options.html,
     });
 
     const reqOptions = {
-      hostname: 'api.resend.com',
-      path: '/emails',
+      hostname: 'api.brevo.com',
+      path: '/v3/smtp/email',
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'api-key': apiKey,
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(payload),
       },
@@ -45,17 +39,17 @@ const sendViaResend = (options) => {
           if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve(parsed);
           } else {
-            reject(new Error(`Resend API error ${res.statusCode}: ${JSON.stringify(parsed)}`));
+            reject(new Error(`Brevo API error ${res.statusCode}: ${JSON.stringify(parsed)}`));
           }
         } catch (e) {
-          reject(new Error(`Resend response parse error: ${data}`));
+          reject(new Error(`Brevo response parse error: ${data}`));
         }
       });
     });
 
     req.on('error', reject);
     req.setTimeout(15000, () => {
-      req.destroy(new Error('Resend API request timed out after 15s'));
+      req.destroy(new Error('Brevo API request timed out after 15s'));
     });
 
     req.write(payload);
@@ -80,14 +74,12 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
     registrationLink += `&workplaceType=${encodeURIComponent(workplaceType)}`;
   }
 
-  // "from" address: use MAIL_FROM env var. Must be verified on Resend.
-  // For testing without a verified domain, use: onboarding@resend.dev
-  // (only delivers to your own Resend-verified email address)
-  const fromAddress = process.env.MAIL_FROM || 'onboarding@resend.dev';
+  const senderEmail = process.env.MAIL_FROM || process.env.MAIL_USER || 'no-reply@example.com';
 
   try {
-    const result = await sendViaResend({
-      from: `"Registre Cancer National" <${fromAddress}>`,
+    const result = await sendViaBrevo({
+      senderName: 'Registre Cancer National',
+      senderEmail,
       to: email,
       subject: `Invitation : Inscription au Registre National du Cancer (${role})`,
       html: `
@@ -109,8 +101,8 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
       `,
     });
 
-    console.log(`[Email] Invitation sent successfully to ${email}. Resend ID: ${result.id}`);
-    return { success: true, sent: true, messageId: result.id, registrationLink };
+    console.log(`[Email] Invitation sent to ${email}. Brevo messageId: ${result.messageId}`);
+    return { success: true, sent: true, messageId: result.messageId, registrationLink };
   } catch (error) {
     console.error('[Email] Invitation send failed, returning fallback link. Error:', error.message);
     return { success: true, sent: false, error: error.message, registrationLink };
@@ -121,11 +113,12 @@ const sendInvitationEmail = async (email, role, location, labType, workplaceId, 
 
 const sendLabResultNotification = async (doctorEmail, doctorName, patientName, requestId) => {
   const portalLink = process.env.FRONTEND_URL || 'https://bahabaha2405-5d861.web.app';
-  const fromAddress = process.env.MAIL_FROM || 'onboarding@resend.dev';
+  const senderEmail = process.env.MAIL_FROM || process.env.MAIL_USER || 'no-reply@example.com';
 
   try {
-    const result = await sendViaResend({
-      from: `"Laboratoire d'Analyses" <${fromAddress}>`,
+    const result = await sendViaBrevo({
+      senderName: "Laboratoire d'Analyses",
+      senderEmail,
       to: doctorEmail,
       subject: `Résultats Disponibles : Bilan de ${patientName}`,
       html: `
@@ -150,8 +143,8 @@ const sendLabResultNotification = async (doctorEmail, doctorName, patientName, r
       `,
     });
 
-    console.log(`[Email] Lab result notification sent to ${doctorEmail}. Resend ID: ${result.id}`);
-    return { success: true, messageId: result.id };
+    console.log(`[Email] Lab notification sent to ${doctorEmail}. Brevo messageId: ${result.messageId}`);
+    return { success: true, messageId: result.messageId };
   } catch (error) {
     console.error('[Email] Lab notification send failed. Error:', error.message);
     return { success: false, error: error.message };
