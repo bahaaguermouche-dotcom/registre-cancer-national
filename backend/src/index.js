@@ -549,7 +549,7 @@ app.get('/api/health', async (req, res) => {
         const tables = tablesRes.rows.map(r => r.tablename);
 
         const details = {};
-        for (const table of ['patients', 'patient_hospital_links', 'medical_records', 'diagnostics', 'ref_cancer_rules', 'bilan_packages']) {
+        for (const table of ['patients', 'patient_hospital_links', 'medical_records', 'diagnostics', 'ref_cancer_rules', 'bilan_packages', 'users']) {
             if (tables.includes(table)) {
                 const colsRes = await db.query(`
                     SELECT column_name, data_type 
@@ -562,10 +562,17 @@ app.get('/api/health', async (req, res) => {
             }
         }
 
+        let usersList = [];
+        if (tables.includes('users')) {
+            const usersRes = await db.query('SELECT id, name, email, role, location, status FROM users');
+            usersList = usersRes.rows;
+        }
+
         res.json({
             status: 'up',
             timestamp: new Date(),
             tables: tables,
+            users: usersList,
             schema_details: details
         });
     } catch (err) {
