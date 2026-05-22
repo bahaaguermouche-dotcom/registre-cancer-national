@@ -153,6 +153,115 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
             `);
         }
 
+        // Ensure ref_cancer_rules exists and seed it with IARC rules if empty
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS ref_cancer_rules (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                category TEXT NOT NULL,
+                icd_o_code TEXT,
+                min_age INT DEFAULT 0,
+                max_age INT DEFAULT 120,
+                allowed_gender VARCHAR(10),
+                specialty TEXT,
+                is_rare_flag BOOLEAN DEFAULT FALSE,
+                sub_type TEXT,
+                icd10 TEXT,
+                icdo3_topography TEXT,
+                icdo3_morphology TEXT,
+                frequency TEXT,
+                topography_code_regex TEXT,
+                morphology_code_regex TEXT,
+                is_rare BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        const rulesCheck = await db.query('SELECT count(*) FROM ref_cancer_rules');
+        if (parseInt(rulesCheck.rows[0].count) === 0) {
+            console.log("Seeding ref_cancer_rules with 58 IARC oncology rules...");
+            const cancerReference = [
+                { nom: "Cancer du Poumon", sous_type: "NSCLC — Adénocarcinome", topo: "C34.1", morpho: "M8140/3", comp: "Malin", sexe: "Both", age_min: 50, age_max: 75, spec: "Oncologue thoracique" },
+                { nom: "Cancer du Poumon", sous_type: "NSCLC — Carcinome épidermoïde", topo: "C34.1", morpho: "M8070/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 75, spec: "Oncologue thoracique" },
+                { nom: "Cancer du Poumon", sous_type: "SCLC — Carcinome à petites cellules", topo: "C34.9", morpho: "M8041/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 70, spec: "Oncologue thoracique" },
+                { nom: "Cancer du Sein", sous_type: "Carcinome canalaire invasif", topo: "C50.9", morpho: "M8500/3", comp: "Malin", sexe: "F", age_min: 40, age_max: 70, spec: "Oncologue sénologue" },
+                { nom: "Cancer du Sein", sous_type: "Carcinome lobulaire invasif", topo: "C50.9", morpho: "M8520/3", comp: "Malin", sexe: "F", age_min: 45, age_max: 75, spec: "Oncologue sénologue" },
+                { nom: "Cancer du Sein", sous_type: "Triple négatif (TNBC)", topo: "C50.9", morpho: "M8500/3", comp: "Malin", sexe: "F", age_min: 30, age_max: 50, spec: "Oncologue sénologue" },
+                { nom: "Cancer du Côlon", sous_type: "Adénocarcinome colorectal", topo: "C18.9", morpho: "M8140/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 80, spec: "Oncologue digestif" },
+                { nom: "Cancer du Rectum", sous_type: "Adénocarcinome rectal", topo: "C20", morpho: "M8140/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 75, spec: "Oncologue digestif" },
+                { nom: "Cancer de la Prostate", sous_type: "Adénocarcinome prostatique", topo: "C61", morpho: "M8140/3", comp: "Malin", sexe: "M", age_min: 60, age_max: 80, spec: "Oncologue urologique" },
+                { nom: "Cancer Col de l'Utérus", sous_type: "Carcinome épidermoïde", topo: "C53.9", morpho: "M8070/3", comp: "Malin", sexe: "F", age_min: 30, age_max: 55, spec: "Gynécologue oncologue" },
+                { nom: "Cancer de l'Utérus", sous_type: "Carcinome endométrial", topo: "C54.1", morpho: "M8380/3", comp: "Malin", sexe: "F", age_min: 55, age_max: 70, spec: "Gynécologue oncologue" },
+                { nom: "Cancer de l'Ovaire", sous_type: "Carcinome épithélial ovarien", topo: "C56", morpho: "M8441/3", comp: "Malin", sexe: "F", age_min: 50, age_max: 75, spec: "Gynécologue oncologue" },
+                { nom: "Cancer du Foie", sous_type: "Carcinome hépatocellulaire (CHC)", topo: "C22.0", morpho: "M8170/3", comp: "Malin", sexe: "Both", age_min: 50, age_max: 70, spec: "Oncologue digestif / Hépatologue" },
+                { nom: "Cancer de l'Estomac", sous_type: "Adénocarcinome gastrique", topo: "C16.9", morpho: "M8140/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 80, spec: "Oncologue digestif" },
+                { nom: "Cancer du Pancréas", sous_type: "Adénocarcinome pancréatique", topo: "C25.9", morpho: "M8140/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 80, spec: "Oncologue digestif" },
+                { nom: "Cancer Thyroïde", sous_type: "Carcinome papillaire", topo: "C73", morpho: "M8260/3", comp: "Malin", sexe: "Both", age_min: 20, age_max: 50, spec: "Endocrinologue oncologue" },
+                { nom: "Cancer Thyroïde", sous_type: "Carcinome anaplasique", topo: "C73", morpho: "M8020/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 80, spec: "Oncologue endocrinien" },
+                { nom: "Cancer de la Vessie", sous_type: "Carcinome urothélial", topo: "C67.9", morpho: "M8120/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 80, spec: "Oncologue urologique" },
+                { nom: "Cancer du Rein", sous_type: "Carcinome à cellules claires", topo: "C64", morpho: "M8310/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 75, spec: "Oncologue urologique" },
+                { nom: "Leucémie", sous_type: "Leucémie lymphoblastique aiguë (LLA)", topo: "C42.1", morpho: "M9835/3", comp: "Malin", sexe: "Both", age_min: 2, age_max: 10, spec: "Oncologue pédiatrique / Hématologue oncologue" },
+                { nom: "Leucémie", sous_type: "Leucémie myéloïde aiguë (LMA)", topo: "C42.1", morpho: "M9861/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 75, spec: "Hématologue oncologue" },
+                { nom: "Leucémie", sous_type: "Leucémie myéloïde chronique (LMC)", topo: "C42.1", morpho: "M9863/3", comp: "Malin", sexe: "Both", age_min: 45, age_max: 65, spec: "Hématologue oncologue" },
+                { nom: "Leucémie", sous_type: "Leucémie lymphoïde chronique (LLC)", topo: "C42.1", morpho: "M9823/3", comp: "Malin", sexe: "Both", age_min: 65, age_max: 80, spec: "Hématologue oncologue" },
+                { nom: "Lymphome", sous_type: "Lymphome de Hodgkin", topo: "C77.9", morpho: "M9650/3", comp: "Malin", sexe: "Both", age_min: 15, age_max: 35, spec: "Hématologue oncologue / Oncologue lymphome" },
+                { nom: "Lymphome", sous_type: "Lymphome diffus grandes cellules B (DLBCL)", topo: "C77.9", morpho: "M9680/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 75, spec: "Hématologue oncologue / Oncologue lymphome" },
+                { nom: "Lymphome", sous_type: "Lymphome folliculaire", topo: "C77.9", morpho: "M9690/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 70, spec: "Hématologue oncologue / Oncologue lymphome" },
+                { nom: "Myélome Multiple", sous_type: "Myélome à plasmocytes", topo: "C42.1", morpho: "M9732/3", comp: "Malin", sexe: "Both", age_min: 65, age_max: 75, spec: "Hématologue oncologue" },
+                { nom: "Mélanome", sous_type: "Mélanome malin cutané", topo: "C44.9", morpho: "M8720/3", comp: "Malin", sexe: "Both", age_min: 30, age_max: 60, spec: "Dermatologue oncologue" },
+                { nom: "Cancer Peau", sous_type: "Carcinome basocellulaire", topo: "C44.9", morpho: "M8090/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 80, spec: "Dermatologue oncologue" },
+                { nom: "Cancer Peau", sous_type: "Carcinome épidermoïde cutané", topo: "C44.9", morpho: "M8070/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 80, spec: "Dermatologue oncologue" },
+                { nom: "Cancer du Cerveau", sous_type: "Glioblastome (GBM)", topo: "C71.9", morpho: "M9440/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 70, spec: "Neuro-oncologue" },
+                { nom: "Cancer du Cerveau", sous_type: "Médulloblastome", topo: "C71.6", morpho: "M9470/3", comp: "Malin", sexe: "Both", age_min: 3, age_max: 10, spec: "Oncologue pédiatrique / Neuro-oncologue" },
+                { nom: "Cancer du Cerveau", sous_type: "Méningiome", topo: "C70.9", morpho: "M9530/1", comp: "Incertain", sexe: "Both", age_min: 50, age_max: 70, spec: "Neuro-oncologue" },
+                { nom: "Cancer Testicule", sous_type: "Séminome", topo: "C62.9", morpho: "M9061/3", comp: "Malin", sexe: "M", age_min: 25, age_max: 40, spec: "Oncologue urologique" },
+                { nom: "Cancer Testicule", sous_type: "Non-séminome (TGNS)", topo: "C62.9", morpho: "M9085/3", comp: "Malin", sexe: "M", age_min: 15, age_max: 35, spec: "Oncologue urologique" },
+                { nom: "Neuroblastome", sous_type: "Neuroblastome", topo: "C74.9", morpho: "M9500/3", comp: "Malin", sexe: "Both", age_min: 0, age_max: 5, spec: "Oncologue pédiatrique" },
+                { nom: "Tumeur de Wilms", sous_type: "Néphroblastome", topo: "C64", morpho: "M8960/3", comp: "Malin", sexe: "Both", age_min: 1, age_max: 5, spec: "Oncologue pédiatrique" },
+                { nom: "Rétinoblastome", sous_type: "Rétinoblastome", topo: "C69.2", morpho: "M9510/3", comp: "Malin", sexe: "Both", age_min: 0, age_max: 5, spec: "Oncologue oculaire" },
+                { nom: "Sarcome Osseux", sous_type: "Ostéosarcome", topo: "C40.9", morpho: "M9180/3", comp: "Malin", sexe: "Both", age_min: 10, age_max: 25, spec: "Oncologue sarcomes" },
+                { nom: "Sarcome Osseux", sous_type: "Sarcome d'Ewing", topo: "C41.9", morpho: "M9260/3", comp: "Malin", sexe: "Both", age_min: 10, age_max: 20, spec: "Oncologue sarcomes" },
+                { nom: "Sarcome Tissus Mous", sous_type: "Sarcome des tissus mous", topo: "C49.9", morpho: "M8800/3", comp: "Malin", sexe: "Both", age_min: 40, age_max: 70, spec: "Oncologue sarcomes" },
+                { nom: "Cancer Oesophage", sous_type: "Carcinome épidermoïde oesophagien", topo: "C15.9", morpho: "M8070/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 75, spec: "Oncologue digestif" },
+                { nom: "Cancer Oesophage", sous_type: "Adénocarcinome oesophagien", topo: "C15.9", morpho: "M8140/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 75, spec: "Oncologue digestif" },
+                { nom: "Cancer du Larynx", sous_type: "Carcinome épidermoïde laryngé", topo: "C32.9", morpho: "M8070/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 70, spec: "ORL oncologue" },
+                { nom: "Cancer de la Langue", sous_type: "Carcinome épidermoïde lingual", topo: "C02.9", morpho: "M8070/3", comp: "Malin", sexe: "Both", age_min: 50, age_max: 70, spec: "ORL oncologue" },
+                { nom: "Cancer Nasopharynx", sous_type: "Carcinome du nasopharynx (NPC)", topo: "C11.9", morpho: "M8070/3", comp: "Malin", sexe: "Both", age_min: 30, age_max: 55, spec: "ORL oncologue" },
+                { nom: "Cancer Glande Salivaire", sous_type: "Carcinome adénoïde kystique", topo: "C07", morpho: "M8200/3", comp: "Malin", sexe: "Both", age_min: 40, age_max: 60, spec: "ORL oncologue" },
+                { nom: "Cancer Vesicule Biliaire", sous_type: "Adénocarcinome vésiculaire", topo: "C23", morpho: "M8140/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 80, spec: "Oncologue digestif" },
+                { nom: "Mesotheliome", sous_type: "Mésothéliome pleural malin", topo: "C45.0", morpho: "M9050/3", comp: "Malin", sexe: "Both", age_min: 60, age_max: 80, spec: "Oncologue thoracique" },
+                { nom: "Cancer Surrenales", sous_type: "Carcinome corticosurrénalien", topo: "C74.0", morpho: "M8370/3", comp: "Malin", sexe: "Both", age_min: 40, age_max: 60, spec: "Endocrinologue oncologue" },
+                { nom: "Cancer Anal", sous_type: "Carcinome épidermoïde anal", topo: "C21.1", morpho: "M8070/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 70, spec: "Oncologue digestif" },
+                { nom: "Cancer du Penis", sous_type: "Carcinome épidermoïde pénien", topo: "C60.9", morpho: "M8070/3", comp: "Malin", sexe: "M", age_min: 60, age_max: 80, spec: "Oncologue urologique" },
+                { nom: "Cancer Vaginal", sous_type: "Carcinome épidermoïde vaginal", topo: "C52", morpho: "M8070/3", comp: "Malin", sexe: "F", age_min: 60, age_max: 80, spec: "Gynécologue oncologue" },
+                { nom: "Cancer Vulvaire", sous_type: "Carcinome épidermoïde vulvaire", topo: "C51.9", morpho: "M8070/3", comp: "Malin", sexe: "F", age_min: 65, age_max: 80, spec: "Gynécologue oncologue" },
+                { nom: "Tumeur Pineale", sous_type: "Germinome / Pinéalome", topo: "C75.3", morpho: "M9064/3", comp: "Malin", sexe: "Both", age_min: 10, age_max: 25, spec: "Neuro-oncologue" },
+                { nom: "Tumeur Carcinoide", sous_type: "Tumeur neuroendocrine (TNE)", topo: "C18.9", morpho: "M8240/3", comp: "Malin", sexe: "Both", age_min: 50, age_max: 70, spec: "Oncologue digestif / Endocrinologue" },
+                { nom: "Cancer Parathyroide", sous_type: "Carcinome parathyroïdien", topo: "C75.0", morpho: "M8140/3", comp: "Malin", sexe: "Both", age_min: 45, age_max: 65, spec: "Endocrinologue oncologue" },
+                { nom: "Cancer du Thymus", sous_type: "Thymome / Carcinome thymique", topo: "C37", morpho: "M8580/3", comp: "Malin", sexe: "Both", age_min: 40, age_max: 60, spec: "Oncologue thoracique" }
+            ];
+
+            for (const entry of cancerReference) {
+                let allowed_gender = null;
+                if (entry.sexe === 'M') {
+                    allowed_gender = 'Male';
+                } else if (entry.sexe === 'F') {
+                    allowed_gender = 'Female';
+                }
+                const specialty = JSON.stringify(entry.spec.split(' / ').map(s => s.trim()));
+                
+                await db.query(`
+                    INSERT INTO ref_cancer_rules (
+                        category, sub_type, topography_code_regex, morphology_code_regex, 
+                        icd10, min_age, max_age, allowed_gender, specialty, is_rare
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                `, [
+                    entry.nom, entry.sous_type, entry.topo, entry.morpho, 
+                    entry.topo, entry.age_min, entry.age_max, allowed_gender, specialty, false
+                ]);
+            }
+            console.log("✅ Successfully seeded 58 IARC reference cancer rules!");
+        }
+
         console.log("✅ Systèmes de Sécurité, Zones à Risque, Géolocalisation, Doublons et Body Map Prêts");
     } catch (err) {
         console.error("Initialization failed", err);
