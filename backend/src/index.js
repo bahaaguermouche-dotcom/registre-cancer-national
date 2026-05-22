@@ -176,9 +176,17 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
             );
         `);
 
+        // Ensure columns added if table existed without them
+        await db.query(`
+            ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS topography_code_regex TEXT;
+            ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS morphology_code_regex TEXT;
+            ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS is_rare BOOLEAN DEFAULT FALSE;
+        `);
+
         const rulesCheck = await db.query('SELECT count(*) FROM ref_cancer_rules');
-        if (parseInt(rulesCheck.rows[0].count) === 0) {
-            console.log("Seeding ref_cancer_rules with 58 IARC oncology rules...");
+        if (parseInt(rulesCheck.rows[0].count) < 50) {
+            console.log("Ref_cancer_rules count is less than 50. Cleaning and seeding 58 IARC oncology rules...");
+            await db.query('DELETE FROM ref_cancer_rules');
             const cancerReference = [
                 { nom: "Cancer du Poumon", sous_type: "NSCLC — Adénocarcinome", topo: "C34.1", morpho: "M8140/3", comp: "Malin", sexe: "Both", age_min: 50, age_max: 75, spec: "Oncologue thoracique" },
                 { nom: "Cancer du Poumon", sous_type: "NSCLC — Carcinome épidermoïde", topo: "C34.1", morpho: "M8070/3", comp: "Malin", sexe: "Both", age_min: 55, age_max: 75, spec: "Oncologue thoracique" },
