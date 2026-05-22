@@ -86,11 +86,72 @@ app.use((req, res, next) => {
             )
         `);
 
-        // Migration for patient coordinates
+        // Ensure patients table exists and has necessary columns
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS patients (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name TEXT NOT NULL,
+                first_name TEXT,
+                last_name TEXT,
+                age INTEGER,
+                gender TEXT,
+                national_id TEXT UNIQUE,
+                assigned_doctor_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                hospital_location TEXT,
+                status TEXT DEFAULT 'Active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         await db.query(`
             ALTER TABLE patients 
             ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION,
-            ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION
+            ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION,
+            ADD COLUMN IF NOT EXISTS cancer_type VARCHAR(255),
+            ADD COLUMN IF NOT EXISTS cancer_code VARCHAR(50),
+            ADD COLUMN IF NOT EXISTS wilaya_residence TEXT;
+        `);
+
+        // Ensure tumors table exists and has owner_hospital_id
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS tumors (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+                doctor_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                topography_code TEXT,
+                topography_label TEXT,
+                morphology_code TEXT,
+                morphology_label TEXT,
+                basis_of_diagnosis TEXT,
+                stage TEXT,
+                grade TEXT, 
+                date_of_incidence DATE,
+                status VARCHAR(20) DEFAULT 'provisional',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                owner_hospital_id UUID
+            );
+        `);
+
+        await db.query(`
+            ALTER TABLE tumors 
+            ADD COLUMN IF NOT EXISTS owner_hospital_id UUID;
+        `);
+
+        // Ensure patient_hospital_links table exists
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS patient_hospital_links (
+                id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                patient_id       UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+                hospital_id      UUID NOT NULL,
+                hospital_name    TEXT,
+                hospital_location TEXT,
+                cancer_type      TEXT NOT NULL,
+                doctor_id        UUID,
+                doctor_name      TEXT,
+                created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (patient_id, cancer_type)
+            );
         `);
 
         // Trigger coordinate seeding
@@ -3136,6 +3197,15 @@ app.get('/api/stats/cancers', authenticateToken, async (req, res) => {
     try {
         const result = await db.query('SELECT DISTINCT cancer_type FROM patients WHERE cancer_type IS NOT NULL ORDER BY cancer_type ASC');
         res.json(result.rows.map(r => r.cancer_type));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/stats/wilayas', authenticateToken, async (req, res) => {
+    try {
+        const result = await db.query("SELECT DISTINCT wilaya_residence FROM patients WHERE wilaya_residence IS NOT NULL AND wilaya_residence != '' ORDER BY wilaya_residence ASC");
+        res.json(result.rows.map(r => r.wilaya_residence));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
