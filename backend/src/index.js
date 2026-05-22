@@ -114,6 +114,96 @@ app.use((req, res, next) => {
             ON patient_hospital_links (patient_id, hospital_id, LOWER(cancer_type));
         `);
 
+        // --- SELF-HEALING DATABASE MIGRATIONS ---
+        // 1. Ensure lab_requests table exists
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS lab_requests (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+                doctor_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                doctor_name TEXT NOT NULL,
+                laboratory_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                laboratory_name TEXT,
+                tests_requested JSONB NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled')),
+                notes TEXT,
+                results_file_path TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // 2. Ensure missing columns in lab_requests exist
+        await db.query(`
+            ALTER TABLE lab_requests ADD COLUMN IF NOT EXISTS owner_hospital_id UUID;
+            ALTER TABLE lab_requests ADD COLUMN IF NOT EXISTS assigned_to UUID REFERENCES users(id) ON DELETE SET NULL;
+            ALTER TABLE lab_requests ADD COLUMN IF NOT EXISTS assigned_to_name VARCHAR(255);
+        `);
+
+        // 3. Ensure lab_result_entries table exists
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS lab_result_entries (
+                id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                lab_request_id  UUID NOT NULL REFERENCES lab_requests(id) ON DELETE CASCADE,
+                test_name       TEXT NOT NULL,
+                template_id     TEXT NOT NULL,
+                template_variant TEXT,
+                result_data     JSONB NOT NULL DEFAULT '{}',
+                status          TEXT DEFAULT 'draft',
+                filled_by       UUID REFERENCES users(id),
+                filled_by_name  TEXT,
+                created_at      TIMESTAMPTZ DEFAULT NOW(),
+                updated_at      TIMESTAMPTZ DEFAULT NOW()
+            );
+        `);
+
+        // 4. Ensure medical_records table exists
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS medical_records (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+                doctor_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                type VARCHAR(50) NOT NULL,
+                description TEXT,
+                file_path TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // 5. Ensure missing columns in medical_records exist
+        await db.query(`
+            ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS file_data BYTEA;
+            ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS file_mimetype TEXT;
+            ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS owner_hospital_id UUID;
+        `);
+
+        // 6. Ensure diagnostics has owner_hospital_id
+        await db.query(`
+            ALTER TABLE diagnostics ADD COLUMN IF NOT EXISTS owner_hospital_id UUID;
+        `);
+
+        // 7. Safe conditional backfills for owner_hospital_id
+        await db.query(`
+            UPDATE medical_records m
+            SET owner_hospital_id = p.primary_hospital_id
+            FROM patients p
+            WHERE m.patient_id = p.id AND m.owner_hospital_id IS NULL AND p.primary_hospital_id IS NOT NULL;
+        `);
+
+        await db.query(`
+            UPDATE diagnostics d
+            SET owner_hospital_id = p.primary_hospital_id
+            FROM patients p
+            WHERE d.patient_id = p.id AND d.owner_hospital_id IS NULL AND p.primary_hospital_id IS NOT NULL;
+        `);
+
+        await db.query(`
+            UPDATE lab_requests r
+            SET owner_hospital_id = p.primary_hospital_id
+            FROM patients p
+            WHERE r.patient_id = p.id AND r.owner_hospital_id IS NULL AND p.primary_hospital_id IS NOT NULL;
+        `);
+
         // --- CANCER DIAGNOSIS & BODY MAP TABLES ---
         await db.query(`
             CREATE TABLE IF NOT EXISTS ref_topography_map (
