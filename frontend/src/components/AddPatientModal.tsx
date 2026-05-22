@@ -8,6 +8,8 @@ interface AddPatientModalProps {
     currentUser: any;
 }
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, currentUser }) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
@@ -82,7 +84,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/reference/cancer-categories', {
+            const response = await axios.get(`${API}/api/reference/cancer-categories`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCategories(response.data);
@@ -94,7 +96,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
     const fetchDoctors = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/users', {
+            const response = await axios.get(`${API}/api/users`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const hospitalDoctors = response.data.filter((u: any) => u.role === 'Médecin' && u.status === 'active');
@@ -162,7 +164,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
         if (!formData.national_id && !formData.cnas_number && (!formData.first_name || !formData.last_name)) return;
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.post('http://localhost:5000/api/patients/check-duplicates', {
+            const res = await axios.post(`${API}/api/patients/check-duplicates`, {
                 first_name: formData.first_name,
                 last_name: formData.last_name,
                 national_id: formData.national_id,
@@ -246,7 +248,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, curr
                 merge_mode: mergeMode,
                 existing_patient_id: existingPatientData?.id || null,
             };
-            const response = await axios.post('http://localhost:5000/api/patients', dataToSubmit, {
+            const response = await axios.post(`${API}/api/patients`, dataToSubmit, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCreatedPatient(response.data);

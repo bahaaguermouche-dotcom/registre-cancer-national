@@ -24,7 +24,7 @@ const PHASE_LABELS: Record<string, { label: string; color: string; bg: string; b
     suivi:         { label: 'Suivi & Surveillance', color: '#065f46', bg: '#d1fae5', border: '#6ee7b7' },
 };
 
-const API = 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // ─── BilanPackageEditor — Modal for creating/editing exam packages ─────────────
 const BilanPackageEditor: React.FC<{

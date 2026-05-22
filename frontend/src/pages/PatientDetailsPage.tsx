@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import api from '../services/api';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 import LabResultForm from '../components/LabResultForm';
 import BodyMapViewer from '../components/BodyMap/BodyMapViewer';
 import CancerDiagnosisForm from '../components/BodyMap/CancerDiagnosisForm';
@@ -652,7 +653,7 @@ const PatientDetailsPage: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             if (editingDiagId) {
-                await axios.patch(`http://localhost:5000/api/diagnostics/${editingDiagId}`,
+                await axios.patch(`${API}/api/diagnostics/${editingDiagId}`,
                     {
                         content: diagContent,
                         type: diagType,
@@ -667,7 +668,7 @@ const PatientDetailsPage: React.FC = () => {
                 );
             }
 
-            const diagId = editingDiagId || (await axios.post(`http://localhost:5000/api/diagnostics`,
+            const diagId = editingDiagId || (await axios.post(`${API}/api/diagnostics`,
                 {
                     patient_id: id,
                     content: diagContent,
@@ -685,7 +686,7 @@ const PatientDetailsPage: React.FC = () => {
             // Link selected existing records to this diagnostic
             if (selectedRecordIds.length > 0) {
                 await Promise.all(selectedRecordIds.map(recordId =>
-                    axios.patch(`http://localhost:5000/api/medical-records/${recordId}`,
+                    axios.patch(`${API}/api/medical-records/${recordId}`,
                         { diagnostic_id: diagId },
                         { headers: { Authorization: `Bearer ${token}` } }
                     )
@@ -701,7 +702,7 @@ const PatientDetailsPage: React.FC = () => {
                 formData.append('description', diagFileDesc || 'Sans description');
                 formData.append('diagnostic_id', diagId);
 
-                await axios.post(`http://localhost:5000/api/medical-records`, formData, {
+                await axios.post(`${API}/api/medical-records`, formData, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data'
@@ -734,7 +735,7 @@ const PatientDetailsPage: React.FC = () => {
             formData.append('type', recordType);
             formData.append('description', recordDesc);
 
-            await axios.post(`http://localhost:5000/api/medical-records`, formData, {
+            await axios.post(`${API}/api/medical-records`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -765,7 +766,7 @@ const PatientDetailsPage: React.FC = () => {
         setActionLoading(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/tumors', {
+            await axios.post(`${API}/api/tumors`, {
                 ...tumorFormData,
                 patient_id: id
             }, {
@@ -800,7 +801,7 @@ const PatientDetailsPage: React.FC = () => {
         setActionLoading(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.patch(`http://localhost:5000/api/medical-records/${recordId}`, {
+            await axios.patch(`${API}/api/medical-records/${recordId}`, {
                 diagnostic_id: diagId
             }, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -823,7 +824,7 @@ const PatientDetailsPage: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             const selectedLab = laboratories.find(l => l.id === selectedLabId);
-            const res = await axios.post('http://localhost:5000/api/lab-requests', {
+            const res = await axios.post(`${API}/api/lab-requests`, {
                 patient_id: id,
                 laboratory_id: selectedLabId,
                 laboratory_name: selectedLab ? selectedLab.name : '',
@@ -2356,7 +2357,7 @@ const PatientDetailsPage: React.FC = () => {
                                                                     }}>
                                                                         {record.type === 'image' ? (
                                                                             <img
-                                                                                src={`http://localhost:5000/api/medical-records/${record.id}/view`}
+                                                                                src={`${API}/api/medical-records/${record.id}/view`}
                                                                                 alt=""
                                                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                                             />
@@ -2366,7 +2367,7 @@ const PatientDetailsPage: React.FC = () => {
                                                                         <div
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
-                                                                                window.open(`http://localhost:5000/api/medical-records/${record.id}/view`, '_blank');
+                                                                                window.open(`${API}/api/medical-records/${record.id}/view`, '_blank');
                                                                             }}
                                                                             style={{
                                                                                 position: 'absolute', top: '4px', left: '4px',
@@ -2776,7 +2777,7 @@ const PatientDetailsPage: React.FC = () => {
                                                     {req.status === 'completed' && req.result_url && (
                                                         <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'flex-end' }}>
                                                             <button
-                                                                onClick={() => window.open(`http://localhost:5000${req.result_url}`, '_blank')}
+                                                                onClick={() => window.open(`${API}${req.result_url}`, '_blank')}
                                                                 style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#f8fafc', color: '#475569', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                                                             >
                                                                 <FileText size={16} /> Voir le Résultat
@@ -2966,7 +2967,7 @@ const PatientDetailsPage: React.FC = () => {
                                                 }}>
                                                     {record.type === 'image' ? (
                                                         <img
-                                                            src={`http://localhost:5000/api/medical-records/${record.id}/view`}
+                                                            src={`${API}/api/medical-records/${record.id}/view`}
                                                             alt={record.description}
                                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                         />
@@ -2984,7 +2985,7 @@ const PatientDetailsPage: React.FC = () => {
 
                                                 <div style={{ display: 'flex', gap: '10px' }}>
                                                     <a
-                                                        href={`http://localhost:5000/api/medical-records/${record.id}/view`}
+                                                        href={`${API}/api/medical-records/${record.id}/view`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="login-button"
@@ -2993,7 +2994,7 @@ const PatientDetailsPage: React.FC = () => {
                                                         <FileText size={16} /> Consulter
                                                     </a>
                                                     <a
-                                                        href={`http://localhost:5000/api/medical-records/${record.id}/view`}
+                                                        href={`${API}/api/medical-records/${record.id}/view`}
                                                         download
                                                         className="login-button"
                                                         style={{ width: '100%', padding: '10px', fontSize: '12px', gap: '6px', backgroundColor: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' }}
@@ -3133,7 +3134,7 @@ const PatientDetailsPage: React.FC = () => {
                                         ) : records.filter(r => r.diagnostic_id === selectedDiag.id).map(record => (
                                             <a
                                                 key={record.id}
-                                                href={`http://localhost:5000/api/medical-records/${record.id}/view`}
+                                                href={`${API}/api/medical-records/${record.id}/view`}
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 style={{
@@ -3151,7 +3152,7 @@ const PatientDetailsPage: React.FC = () => {
                                                 }}>
                                                     {record.type === 'image' ? (
                                                         <img
-                                                            src={`http://localhost:5000/api/medical-records/${record.id}/view`}
+                                                            src={`${API}/api/medical-records/${record.id}/view`}
                                                             alt=""
                                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                             onError={(e) => {
@@ -3162,7 +3163,7 @@ const PatientDetailsPage: React.FC = () => {
 
                                                     <div style={{ position: 'absolute', top: '4px', left: '4px', display: 'flex', gap: '4px' }}>
                                                         <a
-                                                            href={`http://localhost:5000/api/medical-records/${record.id}/view`}
+                                                            href={`${API}/api/medical-records/${record.id}/view`}
                                                             download
                                                             onClick={(e) => e.stopPropagation()}
                                                             style={{
