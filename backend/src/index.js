@@ -621,6 +621,26 @@ app.get('/api/test-queries', async (req, res) => {
     }
 });
 
+app.get('/api/generate-test-token', async (req, res) => {
+    try {
+        // Find the user to get their exact properties
+        const userRes = await db.query("SELECT * FROM users WHERE email = 'larbiguermouche@gmail.com'");
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const user = userRes.rows[0];
+        
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role, location: user.location, name: user.name, workplace_id: user.workplace_id, workplace_type: user.workplace_type },
+            JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+        res.json({ token, user });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Health Check with Database diagnostics
 app.get('/api/health', async (req, res) => {
     try {
