@@ -538,6 +538,89 @@ app.get('/', (req, res) => {
     res.json({ message: "Serveur Registre Cancer - API Opérationnelle" });
 });
 
+// Temporary DB query diagnostics
+app.get('/api/test-queries', async (req, res) => {
+    try {
+        const decoded = {
+            id: '02a94c85-7820-454c-a2e6-99f9670bfca8', // Secrétaire 13
+            role: 'Secrtaire',
+            location: '13 Tlemcen -  DirecteurHopital Wilaya_13'
+        };
+
+        const results = {};
+        
+        // Test query 1: GET /api/patients query
+        try {
+            const userLoc = cleanLoc(decoded.location);
+            const role = decoded.role;
+            
+            let query = `
+                SELECT DISTINCT p.*, u.name as doctor_name 
+                FROM patients p 
+                LEFT JOIN users u ON p.assigned_doctor_id = u.id
+                LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
+            `;
+            let values = [];
+
+            if (role === 'Médecin') {
+                query += ' WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))';
+                values = [decoded.id, `%${userLoc}%`];
+            } else if (role !== 'Administrateur National') {
+                query += ' WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)';
+                values = [`%${userLoc}%`, decoded.id];
+            }
+            
+            const qRes = await db.query(query, values);
+            results.patientsQuery = {
+                success: true,
+                count: qRes.rows.length
+            };
+        } catch (e) {
+            results.patientsQuery = {
+                success: false,
+                error: e.message,
+                stack: e.stack
+            };
+        }
+
+        // Test query 2: dashboard stats query 1
+        try {
+            const userLoc = cleanLoc(decoded.location);
+            const weeklyRegRes = await db.query('SELECT count(*) FROM patients WHERE hospital_location ILIKE $1 AND created_at >= now() - interval \'7 days\'', [`%${userLoc}%`]);
+            results.weeklyRegQuery = {
+                success: true,
+                count: weeklyRegRes.rows[0].count
+            };
+        } catch (e) {
+            results.weeklyRegQuery = {
+                success: false,
+                error: e.message,
+                stack: e.stack
+            };
+        }
+
+        // Test query 3: dashboard stats query 2
+        try {
+            const userLoc = cleanLoc(decoded.location);
+            const documentsRes = await db.query('SELECT count(*) FROM medical_records WHERE patient_id IN (SELECT id FROM patients WHERE hospital_location ILIKE $1)', [`%${userLoc}%`]);
+            results.documentsQuery = {
+                success: true,
+                count: documentsRes.rows[0].count
+            };
+        } catch (e) {
+            results.documentsQuery = {
+                success: false,
+                error: e.message,
+                stack: e.stack
+            };
+        }
+
+        res.json(results);
+    } catch (e) {
+        res.status(500).json({ error: e.message, stack: e.stack });
+    }
+});
+
 // Health Check with Database diagnostics
 app.get('/api/health', async (req, res) => {
     try {
