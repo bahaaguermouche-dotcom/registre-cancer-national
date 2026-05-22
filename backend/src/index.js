@@ -538,9 +538,43 @@ app.get('/', (req, res) => {
     res.json({ message: "Serveur Registre Cancer - API Opérationnelle" });
 });
 
-// Health Check
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'up', timestamp: new Date() });
+// Health Check with Database diagnostics
+app.get('/api/health', async (req, res) => {
+    try {
+        const tablesRes = await db.query(`
+            SELECT tablename 
+            FROM pg_catalog.pg_tables 
+            WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'
+        `);
+        const tables = tablesRes.rows.map(r => r.tablename);
+
+        const details = {};
+        for (const table of ['patients', 'patient_hospital_links', 'medical_records', 'diagnostics', 'ref_cancer_rules', 'bilan_packages']) {
+            if (tables.includes(table)) {
+                const colsRes = await db.query(`
+                    SELECT column_name, data_type 
+                    FROM information_schema.columns 
+                    WHERE table_name = $1;
+                `, [table]);
+                details[table] = colsRes.rows.map(r => `${r.column_name}: ${r.data_type}`);
+            } else {
+                details[table] = "MISSING";
+            }
+        }
+
+        res.json({
+            status: 'up',
+            timestamp: new Date(),
+            tables: tables,
+            schema_details: details
+        });
+    } catch (err) {
+        res.status(500).json({
+            status: 'error',
+            error: err.message,
+            stack: err.stack
+        });
+    }
 });
 
 // Start Server
