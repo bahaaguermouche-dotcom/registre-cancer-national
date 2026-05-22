@@ -229,6 +229,28 @@ await db.query(`CREATE INDEX IF NOT EXISTS idx_saved_reports_user ON saved_repor
             );
         `);
 
+        // 3.5 Ensure diagnostics table exists
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS diagnostics (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+                doctor_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                content TEXT NOT NULL,
+                date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                type VARCHAR(50) DEFAULT 'diagnosis',
+                stage VARCHAR(50),
+                grade VARCHAR(50),
+                treatment_type VARCHAR(50),
+                cycle VARCHAR(50),
+                outcome VARCHAR(50),
+                next_appointment TIMESTAMP,
+                tumor_id UUID REFERENCES tumors(id) ON DELETE SET NULL,
+                owner_hospital_id UUID
+            );
+        `);
+
         // 4. Ensure medical_records table exists
         await db.query(`
             CREATE TABLE IF NOT EXISTS medical_records (
@@ -247,11 +269,16 @@ await db.query(`CREATE INDEX IF NOT EXISTS idx_saved_reports_user ON saved_repor
             ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS file_data BYTEA;
             ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS file_mimetype TEXT;
             ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS owner_hospital_id UUID;
+            ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS diagnostic_id UUID REFERENCES diagnostics(id) ON DELETE SET NULL;
+            ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS tumor_id UUID REFERENCES tumors(id) ON DELETE SET NULL;
+            ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS storage_type VARCHAR(50);
+            ALTER TABLE medical_records ADD COLUMN IF NOT EXISTS data BYTEA;
         `);
 
         // 6. Ensure diagnostics has owner_hospital_id
         await db.query(`
             ALTER TABLE diagnostics ADD COLUMN IF NOT EXISTS owner_hospital_id UUID;
+            ALTER TABLE diagnostics ADD COLUMN IF NOT EXISTS tumor_id UUID REFERENCES tumors(id) ON DELETE SET NULL;
         `);
 
         // 7. Safe conditional backfills for owner_hospital_id
@@ -360,6 +387,11 @@ await db.query(`CREATE INDEX IF NOT EXISTS idx_saved_reports_user ON saved_repor
             ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS topography_code_regex TEXT;
             ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS morphology_code_regex TEXT;
             ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS is_rare BOOLEAN DEFAULT FALSE;
+            ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS icd10 TEXT;
+            ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS sub_type TEXT;
+            ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS icdo3_topography TEXT;
+            ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS icdo3_morphology TEXT;
+            ALTER TABLE ref_cancer_rules ADD COLUMN IF NOT EXISTS frequency TEXT;
         `);
 
         const rulesCheck = await db.query('SELECT count(*) FROM ref_cancer_rules');
