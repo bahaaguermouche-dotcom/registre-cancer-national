@@ -40,6 +40,23 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Global Token Validation Middleware to handle expired/invalid JWTs gracefully
+app.use((req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        jwt.verify(token, JWT_SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ error: "Token invalide ou expiré" });
+            }
+            req.user = decoded;
+            next();
+        });
+    } else {
+        next();
+    }
+});
+
 // --- AUDIT & RISK ZONES SYSTEM ---
 (async () => {
     try {
@@ -538,153 +555,9 @@ app.get('/', (req, res) => {
     res.json({ message: "Serveur Registre Cancer - API Opérationnelle" });
 });
 
-// Temporary DB query diagnostics
-app.get('/api/test-queries', async (req, res) => {
-    try {
-        const decoded = {
-            id: '02a94c85-7820-454c-a2e6-99f9670bfca8', // Secrétaire 13
-            role: 'Secrtaire',
-            location: '13 Tlemcen -  DirecteurHopital Wilaya_13'
-        };
-
-        const results = {};
-        
-        // Test query 1: GET /api/patients query
-        try {
-            const userLoc = cleanLoc(decoded.location);
-            const role = decoded.role;
-            
-            let query = `
-                SELECT DISTINCT p.*, u.name as doctor_name 
-                FROM patients p 
-                LEFT JOIN users u ON p.assigned_doctor_id = u.id
-                LEFT JOIN patient_hospital_links phl ON p.id = phl.patient_id
-            `;
-            let values = [];
-
-            if (role === 'Médecin') {
-                query += ' WHERE (p.assigned_doctor_id = $1 OR phl.doctor_id = $1 OR (p.rcp_active = true AND p.hospital_location ILIKE $2))';
-                values = [decoded.id, `%${userLoc}%`];
-            } else if (role !== 'Administrateur National') {
-                query += ' WHERE (p.hospital_location ILIKE $1 OR phl.hospital_id = $2)';
-                values = [`%${userLoc}%`, decoded.id];
-            }
-            
-            const qRes = await db.query(query, values);
-            results.patientsQuery = {
-                success: true,
-                count: qRes.rows.length
-            };
-        } catch (e) {
-            results.patientsQuery = {
-                success: false,
-                error: e.message,
-                stack: e.stack
-            };
-        }
-
-        // Test query 2: dashboard stats query 1
-        try {
-            const userLoc = cleanLoc(decoded.location);
-            const weeklyRegRes = await db.query('SELECT count(*) FROM patients WHERE hospital_location ILIKE $1 AND created_at >= now() - interval \'7 days\'', [`%${userLoc}%`]);
-            results.weeklyRegQuery = {
-                success: true,
-                count: weeklyRegRes.rows[0].count
-            };
-        } catch (e) {
-            results.weeklyRegQuery = {
-                success: false,
-                error: e.message,
-                stack: e.stack
-            };
-        }
-
-        // Test query 3: dashboard stats query 2
-        try {
-            const userLoc = cleanLoc(decoded.location);
-            const documentsRes = await db.query('SELECT count(*) FROM medical_records WHERE patient_id IN (SELECT id FROM patients WHERE hospital_location ILIKE $1)', [`%${userLoc}%`]);
-            results.documentsQuery = {
-                success: true,
-                count: documentsRes.rows[0].count
-            };
-        } catch (e) {
-            results.documentsQuery = {
-                success: false,
-                error: e.message,
-                stack: e.stack
-            };
-        }
-
-        res.json(results);
-    } catch (e) {
-        res.status(500).json({ error: e.message, stack: e.stack });
-    }
-});
-
-app.get('/api/generate-test-token', async (req, res) => {
-    try {
-        // Find the user to get their exact properties
-        const userRes = await db.query("SELECT * FROM users WHERE email = 'larbiguermouche@gmail.com'");
-        if (userRes.rows.length === 0) {
-            return res.status(404).json({ error: "User not found" });
-        }
-        const user = userRes.rows[0];
-        
-        const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role, location: user.location, name: user.name, workplace_id: user.workplace_id, workplace_type: user.workplace_type },
-            JWT_SECRET,
-            { expiresIn: '8h' }
-        );
-        res.json({ token, user });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// Health Check with Database diagnostics
-app.get('/api/health', async (req, res) => {
-    try {
-        const tablesRes = await db.query(`
-            SELECT tablename 
-            FROM pg_catalog.pg_tables 
-            WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'
-        `);
-        const tables = tablesRes.rows.map(r => r.tablename);
-
-        const details = {};
-        for (const table of ['patients', 'patient_hospital_links', 'medical_records', 'diagnostics', 'ref_cancer_rules', 'bilan_packages', 'users']) {
-            if (tables.includes(table)) {
-                const colsRes = await db.query(`
-                    SELECT column_name, data_type 
-                    FROM information_schema.columns 
-                    WHERE table_name = $1;
-                `, [table]);
-                details[table] = colsRes.rows.map(r => `${r.column_name}: ${r.data_type}`);
-            } else {
-                details[table] = "MISSING";
-            }
-        }
-
-        let usersList = [];
-        if (tables.includes('users')) {
-            const usersRes = await db.query('SELECT id, name, email, role, location, status FROM users');
-            usersList = usersRes.rows;
-        }
-
-        res.json({
-            status: 'up',
-            timestamp: new Date(),
-            tables: tables,
-            users: usersList,
-            schema_details: details
-        });
-    } catch (err) {
-        res.status(500).json({
-            status: 'error',
-            error: err.message,
-            stack: err.stack
-        });
-    }
+// Health Check
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'up', timestamp: new Date() });
 });
 
 // Start Server
@@ -708,10 +581,7 @@ app.get('/api/patients', async (req, res) => {
 
     try {
         const token = authHeader.split(' ')[1];
-        fs.appendFileSync('debug.log', `Raw Auth Header: [${authHeader}]\n`);
-        fs.appendFileSync('debug.log', `Extracted Token: [${token}]\n`);
         const decoded = jwt.verify(token, JWT_SECRET);
-        fs.appendFileSync('debug.log', `Decoded Token: ${JSON.stringify(decoded)}\n`);
 
         let query = `
             SELECT DISTINCT p.*, u.name as doctor_name 
@@ -731,13 +601,9 @@ app.get('/api/patients', async (req, res) => {
             values = [`%${userLoc}%`, decoded.id];
         }
 
-        fs.appendFileSync('debug.log', `Executing Query: ${query}\n`);
-        fs.appendFileSync('debug.log', `Values: ${JSON.stringify(values)}\n`);
-
         const result = await db.query(query, values);
         res.json(result.rows);
     } catch (error) {
-        fs.appendFileSync('debug.log', `GET /api/patients Error: ${error.stack}\n`);
         console.error("GET /api/patients Full Error:", error);
         res.status(500).json({
             error: error.message,
@@ -1151,7 +1017,6 @@ app.post('/api/patients', async (req, res) => {
 
         res.status(201).json(responseData);
     } catch (error) {
-        fs.appendFileSync('debug.log', `POST /api/patients Error: ${error.stack}\n`);
         console.error('Patient Registration Detailed Error:', error);
         res.status(500).json({ 
             error: "Erreur lors de l'enregistrement du patient.",
@@ -2304,7 +2169,6 @@ app.post('/api/laboratories/match', async (req, res) => {
 });
 
 app.post('/api/lab-requests', async (req, res) => {
-    fs.appendFileSync('debug.log', `HIT: POST /api/lab-requests at ${new Date().toISOString()}\n`);
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: "Non autorisé" });
     try {
@@ -2337,7 +2201,6 @@ app.post('/api/lab-requests', async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error("Lab Request Create Error:", error);
-        fs.appendFileSync('debug.log', `Lab Request Create Error: ${error.message}\nPayload: ${JSON.stringify(req.body)}\nStack: ${error.stack}\n`);
         res.status(500).json({
             error: "Erreur lors de la création de la demande",
             details: error.message,
